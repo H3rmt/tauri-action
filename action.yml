@@ -1,6 +1,6 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'tauri-action'
+description: 'action to build and distribute tauri apps'
+author: 'H3rmt'
 inputs:
   milliseconds: # change this
     required: true
