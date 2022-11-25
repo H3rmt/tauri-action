@@ -6,6 +6,8 @@ inputs:
     description: 'The id of the release to upload artifacts as release assets'
   version:
     description: 'string with sem. version from tauri.conf.json'  
+  path: 
+    description: 'path to folder with tauri project' 
 
 runs:
   using: 'node16'

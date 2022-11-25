@@ -6,7 +6,7 @@
   "author": "H3rmt",
   "license": "MIT",
   "scripts": {
-    "package": "ncc build -o ./dist --source-map ./src/index.ts"
+    "package": "ncc build -o ./dist -s -t ./src/index.ts"
   },
   "repository": {
     "type": "git",

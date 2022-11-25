@@ -39,3 +39,4 @@ jobs:
         with:
           version: '1.43.1'
           releaseId: 124325345
+          path: 'tests/tauri-app'
