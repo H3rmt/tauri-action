@@ -35,6 +35,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+      - name: install app dependencies
+        run: yarn install --frozen-lockfile
       - uses: ./
         with:
           version: '1.43.1'
