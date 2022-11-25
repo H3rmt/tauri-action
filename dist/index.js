@@ -3867,7 +3867,7 @@ async function buildProject(root, version) {
         cwd: root,
         stdio: 'inherit'
     });
-    const artifactsPath = (0, path_1.join)('target', 'release', 'bundle');
+    const artifactsPath = (0, path_1.join)(root, 'target', 'release', 'bundle');
     if ((0, os_1.platform)() === 'darwin') {
         return [
             { path: (0, path_1.join)(artifactsPath, `dmg/Grades_${version}_x64.dmg`), name: `grades_${version}_x64.dmg` },
