@@ -15,7 +15,7 @@ async function run(): Promise<void> {
 
 async function action() {
   const projectPath = resolve(
-    process.cwd(), process.argv[2]
+    process.cwd(),  'src-tauri'
   )
   core.info(projectPath)
 

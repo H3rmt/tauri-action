@@ -15,7 +15,7 @@ export async function buildProject(
         stdio: 'inherit'
     })
 
-    const artifactsPath = join('src-tauri', 'target', 'release', 'bundle')
+    const artifactsPath = join('target', 'release', 'bundle')
 
     if (platform() === 'darwin') {
         return [
