@@ -8,6 +8,11 @@ export async function buildProject(
     root: string,
     version: string,
 ): Promise<Artifact[]> {
+    // install 
+    await execa('yarn', ['install', '--frozen-lockfile'], {
+        cwd: root,
+        stdio: 'inherit'
+    })
 
     // build
     await execa('yarn', ['run', 'tauri build'], {
