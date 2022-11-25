@@ -3858,7 +3858,7 @@ const os_1 = __nccwpck_require__(2037);
 const execa_1 = __nccwpck_require__(276);
 async function buildProject(root, version) {
     // build
-    await (0, execa_1.execa)('yarn', ['tauri', 'build'], {
+    await (0, execa_1.execa)('yarn', ['run', 'build'], {
         cwd: root,
         stdio: 'inherit'
     });
@@ -5433,7 +5433,7 @@ async function run() {
     }
 }
 async function action() {
-    const projectPath = (0, path_1.resolve)(process.cwd(), 'src-tauri');
+    const projectPath = (0, path_1.resolve)(process.cwd(), 'tests', 'src-tauri');
     core.info(projectPath);
     const configPath = (0, path_1.join)(projectPath, 'tauri.conf.json');
     core.info(configPath);

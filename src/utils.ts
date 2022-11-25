@@ -10,7 +10,7 @@ export async function buildProject(
 ): Promise<Artifact[]> {
 
     // build
-    await execa('yarn', ['tauri', 'build'], {
+    await execa('yarn', ['run', 'build'], {
         cwd: root,
         stdio: 'inherit'
     })
