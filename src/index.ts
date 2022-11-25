@@ -34,7 +34,7 @@ async function action() {
 
   const artifacts = await buildProject(projectPath, version)
 
-  core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + n))
+  core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + n + '\n'))
 }
 
 run()
