@@ -18,6 +18,14 @@ jobs:
           
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ macos-latest, ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.platform }}
+    env:
+      CARGO_TERM_COLOR: always
+
     steps:
       - uses: actions/checkout@v3
       - name: setup node
@@ -35,8 +43,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: tests/tauri-app/src-tauri
-      - name: install app dependencies
-        run: yarn install --frozen-lockfile
+          prefix-key: rust-${{ matrix.platform }}
       - uses: ./
         with:
           version: '1.43.1'
