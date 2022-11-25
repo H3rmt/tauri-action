@@ -4,6 +4,8 @@ author: 'H3rmt'
 inputs:
   releaseId:
     description: 'The id of the release to upload artifacts as release assets'
+  version:
+    description: 'string with sem. version from tauri.conf.json'  
 
 runs:
   using: 'node16'
