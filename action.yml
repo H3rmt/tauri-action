@@ -2,10 +2,9 @@ name: 'tauri-action'
 description: 'action to build and distribute tauri apps'
 author: 'H3rmt'
 inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  releaseId:
+    description: 'The id of the release to upload artifacts as release assets'
+
 runs:
   using: 'node16'
   main: 'dist/index.js'

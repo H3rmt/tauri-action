@@ -1,19 +1,32 @@
+import { platform } from 'os'
 import * as core from '@actions/core'
-import {wait} from './wait'
+import { join, resolve, dirname, basename } from 'path'
+import { existsSync } from 'fs'
+import { buildProject } from './utils'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
+    await action()
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error)
+      core.setFailed(error.message)
   }
+}
+
+async function action() {
+  const projectPath = resolve(
+    process.cwd(),  process.argv[2]
+  )
+  const configPath = join(
+    projectPath, 'tauri.conf.json'
+  )
+
+  const releaseId = Number(core.getInput('releaseId') || 0)
+  const version = core.getInput('version')
+
+  const artifacts = await buildProject(projectPath, version)
+
+  core.getInput
 }
 
 run()
