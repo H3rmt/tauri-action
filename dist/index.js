@@ -3862,7 +3862,7 @@ async function buildProject(root, version) {
         cwd: root,
         stdio: 'inherit'
     });
-    const artifactsPath = (0, path_1.join)('src-tauri', 'target', 'release', 'bundle');
+    const artifactsPath = (0, path_1.join)('target', 'release', 'bundle');
     if ((0, os_1.platform)() === 'darwin') {
         return [
             { path: (0, path_1.join)(artifactsPath, `dmg/Grades_${version}_x64.dmg`), name: `grades_${version}_x64.dmg` },
@@ -5429,10 +5429,11 @@ async function run() {
     catch (error) {
         if (error instanceof Error)
             core.setFailed(error.message);
+        throw error;
     }
 }
 async function action() {
-    const projectPath = (0, path_1.resolve)(process.cwd(), process.argv[2]);
+    const projectPath = (0, path_1.resolve)(process.cwd(), 'src-tauri');
     core.info(projectPath);
     const configPath = (0, path_1.join)(projectPath, 'tauri.conf.json');
     core.info(configPath);
