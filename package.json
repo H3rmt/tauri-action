@@ -13,7 +13,8 @@
     "url": "git+https://github.com/H3rmt/tauri-action.git"
   },
   "dependencies": {
-    "@actions/core": "^1.10.0"
+    "@actions/core": "^1.10.0",
+    "execa": "6.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",

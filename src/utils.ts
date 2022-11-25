@@ -1,6 +1,7 @@
-import { Artifact, Runner } from "./def"
+import { Artifact } from "./def"
 import { join, resolve, dirname, basename } from 'path'
 import { platform } from 'os'
+import { execa } from "execa"
 
 
 export async function buildProject(
@@ -8,7 +9,11 @@ export async function buildProject(
     version: string,
 ): Promise<Artifact[]> {
 
-    // build 
+    // build
+    await execa('yarn', ['tauri', 'build'], {
+        cwd: root,
+        stdio: 'inherit'
+    })
 
     const artifactsPath = join('src-tauri', 'target', 'release', 'bundle')
 

@@ -15,18 +15,25 @@ async function run(): Promise<void> {
 
 async function action() {
   const projectPath = resolve(
-    process.cwd(),  process.argv[2]
+    process.cwd(), process.argv[2]
   )
+  core.info(projectPath)
+
   const configPath = join(
     projectPath, 'tauri.conf.json'
   )
+  core.info(configPath)
 
-  const releaseId = Number(core.getInput('releaseId') || 0)
+
+  const releaseId = Number(core.getInput('releaseId'))
+  core.info(`${releaseId}`)
+
+
   const version = core.getInput('version')
 
   const artifacts = await buildProject(projectPath, version)
 
-  core.getInput
+  core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + n))
 }
 
 run()
