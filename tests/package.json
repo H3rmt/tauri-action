@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"tauri build": "cd src-tauri/ && cargo build"
+		"build": "cd src-tauri/ && cargo build"
 	},
 	"dependencies": {
 		
