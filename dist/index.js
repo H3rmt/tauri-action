@@ -5441,7 +5441,7 @@ async function action() {
     core.info(`${releaseId}`);
     const version = core.getInput('version');
     const artifacts = await (0, utils_1.buildProject)(projectPath, version);
-    core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + n + '\n'));
+    core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
 }
 run();
 
