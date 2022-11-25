@@ -34,7 +34,7 @@ jobs:
       - name: Load Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src-tauri
+          workspaces: tests/tauri-app/src-tauri
       - name: install app dependencies
         run: yarn install --frozen-lockfile
       - uses: ./
