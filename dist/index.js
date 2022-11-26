@@ -10738,7 +10738,7 @@ async function publish(github, releaseId, artifacts) {
         //         asset_id: existingAsset.id
         //     })
         // }
-        core.info(`uploading: ${artifact}`);
+        core.info(`uploading: ${artifact.name}: ${artifact.path}`);
         await github.rest.repos.uploadReleaseAsset({
             // headers,
             owner: github_1.context.repo.owner,
