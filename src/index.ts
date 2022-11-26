@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import { resolve } from 'path'
 import { buildProject, publish } from './utils'
 import { getOctokit } from '@actions/github'
+import { readFileSync } from 'fs'
 
 async function run(): Promise<void> {
   try {
@@ -17,7 +18,7 @@ async function action() {
   const projectPath = resolve(
     process.cwd(), core.getInput('path'), 'src-tauri'
   )
-  core.info(`projectPath: ${projectPath}`)
+  core.debug(`projectPath: ${projectPath}`)
 
   if (process.env.GITHUB_TOKEN === undefined) {
     throw new Error('GITHUB_TOKEN is required')
@@ -25,17 +26,18 @@ async function action() {
   const github = getOctokit(process.env.GITHUB_TOKEN)
 
   const releaseId = Number(core.getInput('releaseId'))
-  core.info(`releaseId: ${releaseId}`)
+  core.debug(`releaseId: ${releaseId}`)
 
   const version = core.getInput('version')
-  core.info(`version: ${version}`)
+  core.debug(`version: ${version}`)
   const name = core.getInput('name')
-  core.info(`name: ${name}`)
+  core.debug(`name: ${name}`)
 
   const artifacts = await buildProject(projectPath, version, name)
   core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
 
   await publish(github, releaseId, artifacts)
+  core.setOutput('sigs', artifacts.filter(a => a.name.endsWith(".sig")).map(a => readFileSync(a.path).toString()))
 }
 
 run()

@@ -5,7 +5,7 @@ import { platform } from 'os'
 import { execa } from "execa"
 import { GitHub } from '@actions/github/lib/utils'
 import * as core from '@actions/core'
-import { readFileSync, statSync } from 'fs'
+import { readFileSync } from 'fs'
 
 export async function buildProject(
     root: string,
