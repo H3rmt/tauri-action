@@ -10689,21 +10689,20 @@ async function buildProject(root, version, name) {
         cwd: root,
         stdio: 'inherit'
     });
-    const capName = name.charAt(0).toUpperCase() + name.slice(1);
     const artifactsPath = (0, path_1.join)(root, 'target', 'release', 'bundle');
     if ((0, os_1.platform)() === 'darwin') {
         return [
-            { path: (0, path_1.join)(artifactsPath, `dmg/${capName}_${version}_x64.dmg`), name: `${name}_${version}_x64.dmg` },
-            { path: (0, path_1.join)(artifactsPath, `macos/${capName}.app`), name: `${name}_${version}.app` },
-            { path: (0, path_1.join)(artifactsPath, `macos/${capName}.app.tar.gz`), name: `${name}_${version}.app.tar.gz` },
-            { path: (0, path_1.join)(artifactsPath, `macos/${capName}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
+            { path: (0, path_1.join)(artifactsPath, `dmg/${name}_${version}_x64.dmg`), name: `${name}_${version}_x64.dmg` },
+            { path: (0, path_1.join)(artifactsPath, `macos/${name}.app`), name: `${name}_${version}.app` },
+            { path: (0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz`), name: `${name}_${version}.app.tar.gz` },
+            { path: (0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
         ];
     }
     else if ((0, os_1.platform)() === 'win32') {
         return [
-            { path: (0, path_1.join)(artifactsPath, `msi/${capName}_${version}_x64_en-US.msi`), name: `${name}_${version}_x64_en-US.msi` },
-            { path: (0, path_1.join)(artifactsPath, `msi/${capName}_${version}_x64_en-US.msi.zip`), name: `${name}_${version}_x64_en-US.msi.zip` },
-            { path: (0, path_1.join)(artifactsPath, `msi/${capName}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
+            { path: (0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi`), name: `${name}_${version}_x64_en-US.msi` },
+            { path: (0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip`), name: `${name}_${version}_x64_en-US.msi.zip` },
+            { path: (0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
         ];
     }
     else {
@@ -10724,11 +10723,11 @@ async function publish(github, releaseId, artifacts) {
     //     per_page: 50
     // })).data
     for (const artifact of artifacts) {
-        const headers = {
-            'content-type': 'application/zip',
-            'content-length': (0, fs_1.statSync)(artifact.path).size
-        };
-        core.info(`headers["content-length"]:${headers["content-length"]}`);
+        // const headers = {
+        //     'content-type': 'application/zip',
+        //     'content-length': statSync(artifact.path).size
+        // }
+        // core.info(`headers["content-length"]:${headers["content-length"]}`)
         // const existingAsset = existingAssets.find((a) => a.name === artifact.name)
         // core.info(`existing: ${existingAsset}, name: ${artifact.name}`)
         // if (existingAsset) {
@@ -10739,6 +10738,7 @@ async function publish(github, releaseId, artifacts) {
         //         asset_id: existingAsset.id
         //     })
         // }
+        core.info(`uploading: ${artifact.name}`);
         await github.rest.repos.uploadReleaseAsset({
             // headers,
             owner: github_1.context.repo.owner,
