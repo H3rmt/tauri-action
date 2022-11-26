@@ -10693,7 +10693,7 @@ async function buildProject(root, version, name) {
     if ((0, os_1.platform)() === 'darwin') {
         return [
             { path: (0, path_1.join)(artifactsPath, `dmg/${name}_${version}_x64.dmg`), name: `${name}_${version}_x64.dmg` },
-            { path: (0, path_1.join)(artifactsPath, `macos/${name}.app`), name: `${name}_${version}.app` },
+            // { path: join(artifactsPath, `macos/${name}.app`), name: `${name}_${version}.app` },
             { path: (0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz`), name: `${name}_${version}.app.tar.gz` },
             { path: (0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
         ];
