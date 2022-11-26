@@ -7,10 +7,13 @@ import { update } from './update'
 
 async function run(): Promise<void> {
   try {
-    if (core.getInput('gistId') !== '')
+    if (core.getInput('gistId') !== '') {
+      core.info("mode set to update gist")
       await action2()  // mode set to update gist
-    else
+    } else {
+      core.info("mode set to build and return sig")
       await action1()  // mode set to build and return sig
+    }
   } catch (error) {
     if (error instanceof Error)
       core.setFailed(error.message)
