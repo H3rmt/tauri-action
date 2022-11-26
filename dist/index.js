@@ -12352,7 +12352,7 @@ async function action() {
     const artifacts = await (0, utils_1.buildProject)(projectPath, version, name);
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
     await (0, utils_1.publish)(github, releaseId, artifacts);
-    core.setOutput('sigs', artifacts.filter(a => a.name.endsWith(".sig")).map(a => (0, fs_1.readFileSync)(a.path).toString()));
+    core.setOutput('sigs', artifacts.filter(a => a.name.endsWith(".sig")).map(a => (0, fs_1.readFileSync)(a.path).toString()).at(0));
 }
 run();
 

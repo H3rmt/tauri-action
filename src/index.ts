@@ -37,7 +37,7 @@ async function action() {
   core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
 
   await publish(github, releaseId, artifacts)
-  core.setOutput('sigs', artifacts.filter(a => a.name.endsWith(".sig")).map(a => readFileSync(a.path).toString()))
+  core.setOutput('sigs', artifacts.filter(a => a.name.endsWith(".sig")).map(a => readFileSync(a.path).toString()).at(0))
 }
 
 run()
