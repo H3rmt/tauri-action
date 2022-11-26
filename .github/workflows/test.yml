@@ -1,49 +1,53 @@
-name: 'build-test'
-on: # rebuild any PRs and main branch changes
+on:
   pull_request:
   push:
     branches:
       - main
-      - 'releases/*'
+      - "releases/*"
 
 jobs:
-  build: # make sure build/ci work properly
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          npm install
-      - run: |
-          npm run package
-          
-  test: # make sure the action works on a clean machine without building
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ macos-latest, ubuntu-latest, windows-latest ]
-    runs-on: ${{ matrix.platform }}
-    env:
-      CARGO_TERM_COLOR: always
+      - run: npm install
+      - run: npm run package
 
+  check-dist:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: setup node
-        uses: actions/setup-node@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3.5.1
         with:
-          node-version: 16
-          cache: 'npm'
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-latest'
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild the dist/ directory
+        run: npm run package
+
+      - name: Compare the expected and actual dist/ directories
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
-      - name: Load Rust Cache
-        uses: Swatinem/rust-cache@v2
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build.  See status below:"
+            git diff
+            exit 1
+          fi
+        id: diff
+
+      # If index.js was different than expected, upload the expected version as an artifact
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
         with:
-          workspaces: tests/tauri-app/src-tauri
-          prefix-key: rust-${{ matrix.platform }}
+          name: dist
+          path: dist/
+
+  remove-old:
+    runs-on: ubuntu-latest
+    steps:
       - name: remove old assets
         uses: actions/github-script@v6
         with:
@@ -63,12 +67,40 @@ jobs:
                 asset_id: asset.id
               })
             }
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    env:
+      CARGO_TERM_COLOR: always
+    needs: [remove-old, check-dist, build]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
+      - name: Load Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tests/tauri-app/src-tauri
+          prefix-key: rust-${{ matrix.platform }}
       - uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5N2VicWp0d2dHdDBWb01qaUNGZmNCeC9DNEprQWVDd0F0UWtreFphOE9iZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQTR5V2F1Y2p4aitxLzMrNFlVc0ZDN2x5Tjh3SXAyTEdjOVA1YTVxeUhnMlpiVWV0d1l1TDl6L25kdlBMZDFOWDJQQzQ4UTdlcTRiZFAvbmlGb3I0MFNXUEFWRUNWU1FFMzFsUzVneVNmZ1hIenRDZ21nZzBMZDhnQUJINGh0RlltRmdwYm5RVHFTUGc9Cg==
         with:
-          version: '0.3.12'
+          version: "0.3.12"
           releaseId: 84242624
-          path: 'tests/tauri-app'
+          path: "tests/tauri-app"
           name: tauri-app
