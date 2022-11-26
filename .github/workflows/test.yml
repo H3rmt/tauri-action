@@ -71,3 +71,4 @@ jobs:
           version: '0.3.12'
           releaseId: 84242624
           path: 'tests/tauri-app'
+          name: tauri-app
