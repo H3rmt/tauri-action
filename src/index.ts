@@ -1,8 +1,7 @@
-import { platform } from 'os'
 import * as core from '@actions/core'
-import { join, resolve, dirname, basename } from 'path'
-import { existsSync } from 'fs'
-import { buildProject } from './utils'
+import { resolve } from 'path'
+import { buildProject, publish } from './utils'
+import { getOctokit } from '@actions/github'
 
 async function run(): Promise<void> {
   try {
@@ -16,25 +15,27 @@ async function run(): Promise<void> {
 
 async function action() {
   const projectPath = resolve(
-    process.cwd(), core.getInput('path') || '', 'src-tauri'
+    process.cwd(), core.getInput('path'), 'src-tauri'
   )
-  core.info(projectPath)
+  core.info(`projectPath: ${projectPath}`)
 
-  const configPath = join(
-    projectPath, 'tauri.conf.json'
-  )
-  core.info(configPath)
-
+  if (process.env.GITHUB_TOKEN === undefined) {
+    throw new Error('GITHUB_TOKEN is required')
+  }
+  const github = getOctokit(process.env.GITHUB_TOKEN)
 
   const releaseId = Number(core.getInput('releaseId'))
-  core.info(`${releaseId}`)
-
+  core.info(`releaseId: ${releaseId}`)
 
   const version = core.getInput('version')
+  core.info(`version: ${version}`)
+  const name = core.getInput('name')
+  core.info(`name: ${name}`)
 
-  const artifacts = await buildProject(projectPath, version)
-
+  const artifacts = await buildProject(projectPath, version, name)
   core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
+
+  await publish(github, releaseId, artifacts)
 }
 
 run()

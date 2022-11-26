@@ -7,7 +7,9 @@ inputs:
   version:
     description: 'string with sem. version from tauri.conf.json'  
   path: 
-    description: 'path to folder with tauri project' 
+    description: 'path to folder with tauri project'
+  name:
+    description: 'name of project'
 
 runs:
   using: 'node16'

@@ -6,5 +6,5 @@
     "rootDir": "./src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     "strict": true,                           /* Enable all strict type-checking options. */
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "tests"]
 }

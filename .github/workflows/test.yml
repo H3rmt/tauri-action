@@ -46,6 +46,6 @@ jobs:
           prefix-key: rust-${{ matrix.platform }}
       - uses: ./
         with:
-          version: '1.43.1'
-          releaseId: 124325345
+          version: '0.3.12'
+          releaseId: 84242624
           path: 'tests/tauri-app'
