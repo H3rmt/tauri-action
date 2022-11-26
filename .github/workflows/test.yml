@@ -44,7 +44,29 @@ jobs:
         with:
           workspaces: tests/tauri-app/src-tauri
           prefix-key: rust-${{ matrix.platform }}
+      - name: remove old assets
+        uses: actions/github-script@v6
+        with:
+          retries: 3
+          script: |
+            const { data } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: 84242624
+            });
+
+            for (const asset of data.assets) {
+              core.info(`Deleting existing ${asset.name}...`)
+              await github.rest.repos.deleteReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                asset_id: asset.id
+              })
+            }
       - uses: ./
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
         with:
           version: '0.3.12'
           releaseId: 84242624
