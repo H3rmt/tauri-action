@@ -76,7 +76,7 @@ export async function publish(github: InstanceType<typeof GitHub>, releaseId: nu
         //     })
         // }
 
-        core.info(`uploading: ${artifact.name}`)
+        core.info(`uploading: ${artifact}`)
         await github.rest.repos.uploadReleaseAsset({
             // headers,
             owner: context.repo.owner,
