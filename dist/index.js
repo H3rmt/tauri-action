@@ -10687,24 +10687,24 @@ async function update(github, version, releaseId, gistId, fileName, notes, tagNa
     const macupdate = core.getInput('macupdate');
     const linupdate = core.getInput('linupdate');
     const content = `{
-                "version": "v${version}",
-                "notes": "${notes}",
-                "pub_date": "${date}",
-                "platforms": {
-                  "darwin-x86_64": {
-                    "signature": "${macsig}",
-                    "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${macupdate}"
-                  },
-                  "linux-x86_64": {
-                    "signature": "${linsig}",
-                    "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${linupdate}"
-                  },
-                  "windows-x86_64": {
-                    "signature": "${winsig}",
-                    "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${winupdate}"
-                  }
-                }
-              }`;
+    "version": "v${version}",
+    "notes": "${notes}",
+    "pub_date": "${date}",
+    "platforms": {
+        "darwin-x86_64": {
+            "signature": "${macsig}",
+            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${macupdate}"
+        },
+        "linux-x86_64": {
+            "signature": "${linsig}",
+            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${linupdate}"
+        },
+        "windows-x86_64": {
+            "signature": "${winsig}",
+            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${winupdate}"
+        }
+    }
+}`;
     core.notice(content);
     await github.rest.gists.update({
         gist_id: gistId,
@@ -12409,7 +12409,7 @@ async function action2() {
     if (process.env.GITHUB_TOKEN === undefined) {
         throw new Error('GITHUB_TOKEN is required');
     }
-    const github = (0, github_1.getOctokit)(process.env.GITHUB_TOKEN);
+    const github = (0, github_1.getOctokit)(process.env.PAT || process.env.GITHUB_TOKEN);
     const releaseId = Number(core.getInput('releaseId'));
     core.debug(`releaseId: ${releaseId}`);
     const version = core.getInput('version');
@@ -12432,7 +12432,7 @@ async function action1() {
     if (process.env.GITHUB_TOKEN === undefined) {
         throw new Error('GITHUB_TOKEN is required');
     }
-    const github = (0, github_1.getOctokit)(process.env.GITHUB_TOKEN);
+    const github = (0, github_1.getOctokit)(process.env.PAT || process.env.GITHUB_TOKEN);
     const releaseId = Number(core.getInput('releaseId'));
     core.debug(`releaseId: ${releaseId}`);
     const version = core.getInput('version');

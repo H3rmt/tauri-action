@@ -115,6 +115,7 @@ jobs:
       - uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.PAT }}
         with:
           version: "0.3.12"
           releaseId: 84242624

@@ -18,24 +18,24 @@ export async function update(github: InstanceType<typeof GitHub>, version: strin
     const linupdate = core.getInput('linupdate')
 
     const content = `{
-                "version": "v${version}",
-                "notes": "${notes}",
-                "pub_date": "${date}",
-                "platforms": {
-                  "darwin-x86_64": {
-                    "signature": "${macsig}",
-                    "url": "https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${tagName}/${macupdate}"
-                  },
-                  "linux-x86_64": {
-                    "signature": "${linsig}",
-                    "url": "https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${tagName}/${linupdate}"
-                  },
-                  "windows-x86_64": {
-                    "signature": "${winsig}",
-                    "url": "https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${tagName}/${winupdate}"
-                  }
-                }
-              }`;
+    "version": "v${version}",
+    "notes": "${notes}",
+    "pub_date": "${date}",
+    "platforms": {
+        "darwin-x86_64": {
+            "signature": "${macsig}",
+            "url": "https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${tagName}/${macupdate}"
+        },
+        "linux-x86_64": {
+            "signature": "${linsig}",
+            "url": "https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${tagName}/${linupdate}"
+        },
+        "windows-x86_64": {
+            "signature": "${winsig}",
+            "url": "https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${tagName}/${winupdate}"
+        }
+    }
+}`;
 
     core.notice(content);
 

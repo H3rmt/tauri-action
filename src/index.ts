@@ -2,7 +2,6 @@ import * as core from '@actions/core'
 import { resolve } from 'path'
 import { buildProject, publish } from './utils'
 import { getOctokit } from '@actions/github'
-import { readFileSync } from 'fs'
 import { update } from './update'
 
 async function run(): Promise<void> {
@@ -25,7 +24,7 @@ async function action2() {
   if (process.env.GITHUB_TOKEN === undefined) {
     throw new Error('GITHUB_TOKEN is required')
   }
-  const github = getOctokit(process.env.GITHUB_TOKEN)
+  const github = getOctokit(process.env.PAT || process.env.GITHUB_TOKEN)
 
   const releaseId = Number(core.getInput('releaseId'))
   core.debug(`releaseId: ${releaseId}`)
@@ -59,7 +58,7 @@ async function action1() {
   if (process.env.GITHUB_TOKEN === undefined) {
     throw new Error('GITHUB_TOKEN is required')
   }
-  const github = getOctokit(process.env.GITHUB_TOKEN)
+  const github = getOctokit(process.env.PAT || process.env.GITHUB_TOKEN)
 
   const releaseId = Number(core.getInput('releaseId'))
   core.debug(`releaseId: ${releaseId}`)
