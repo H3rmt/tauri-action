@@ -71,6 +71,13 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     needs: [remove-old]
+    outputs:
+      winupdate: ${{ steps.build.outputs.winupdate }}
+      macupdate: ${{ steps.build.outputs.macupdate }}
+      linupdate: ${{ steps.build.outputs.linupdate }}
+      winsig: ${{ steps.build.outputs.winsig }}
+      macsig: ${{ steps.build.outputs.macsig }}
+      linsig: ${{ steps.build.outputs.linsig }}
 
     steps:
       - uses: actions/checkout@v3
@@ -90,6 +97,7 @@ jobs:
           workspaces: tests/tauri-app/src-tauri
           prefix-key: rust-${{ matrix.platform }}
       - uses: ./
+        id: build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5N2VicWp0d2dHdDBWb01qaUNGZmNCeC9DNEprQWVDd0F0UWtreFphOE9iZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQTR5V2F1Y2p4aitxLzMrNFlVc0ZDN2x5Tjh3SXAyTEdjOVA1YTVxeUhnMlpiVWV0d1l1TDl6L25kdlBMZDFOWDJQQzQ4UTdlcTRiZFAvbmlGb3I0MFNXUEFWRUNWU1FFMzFsUzVneVNmZ1hIenRDZ21nZzBMZDhnQUJINGh0RlltRmdwYm5RVHFTUGc9Cg==
@@ -98,3 +106,25 @@ jobs:
           releaseId: 84242624
           path: "tests/tauri-app"
           name: tauri-app
+
+  update:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: ./
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version: "0.3.12"
+          releaseId: 84242624
+          name: tauri-app
+          gistId: be4286054435e085560616fefeaa8a6d
+          fileName: test.json
+          notes: ${{ github.event.head_commit.message }}
+          tagName: "0.0.0"
+          winsig: ${{ needs.test.outputs.winsig }}
+          macsig: ${{ needs.test.outputs.macsig }}
+          linsig: ${{ needs.test.outputs.linsig }}
+          winupdate: ${{ needs.test.outputs.winupdate }}
+          macupdate: ${{ needs.test.outputs.macupdate }}
+          linupdate: ${{ needs.test.outputs.linupdate }}

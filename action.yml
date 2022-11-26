@@ -11,10 +11,6 @@ inputs:
   name:
     description: 'name of project'
 
-outputs:
-  sigs:
-    description: 'sign of this build'
-
 runs:
   using: 'node16'
   main: 'dist/index.js'

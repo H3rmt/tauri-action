@@ -10665,6 +10665,62 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 8386:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.update = void 0;
+const github_1 = __nccwpck_require__(5438);
+const core = __nccwpck_require__(2186);
+async function update(github, version, releaseId, gistId, fileName, notes, tagName) {
+    const date = (await github.rest.repos.getRelease({
+        owner: github_1.context.repo.owner,
+        repo: github_1.context.repo.repo,
+        release_id: releaseId
+    })).data.published_at;
+    const winsig = core.getInput('winsig');
+    const macsig = core.getInput('macsig');
+    const linsig = core.getInput('linsig');
+    const winupdate = core.getInput('winupdate');
+    const macupdate = core.getInput('macupdate');
+    const linupdate = core.getInput('linupdate');
+    const content = `{
+                "version": "v${version}",
+                "notes": "${notes}",
+                "pub_date": "${date}",
+                "platforms": {
+                  "darwin-x86_64": {
+                    "signature": "${macsig}",
+                    "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${macupdate}"
+                  },
+                  "linux-x86_64": {
+                    "signature": "${linsig}",
+                    "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${linupdate}"
+                  },
+                  "windows-x86_64": {
+                    "signature": "${winsig}",
+                    "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${winupdate}"
+                  }
+                }
+              }`;
+    core.notice(content);
+    await github.rest.gists.update({
+        gist_id: gistId,
+        files: {
+            fileName: {
+                content: content
+            }
+        }
+    });
+    core.notice(`updated ${fileName} for tauri updater`);
+}
+exports.update = update;
+
+
+/***/ }),
+
 /***/ 1314:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -10691,6 +10747,8 @@ async function buildProject(root, version, name) {
     });
     const artifactsPath = (0, path_1.join)(root, 'target', 'release', 'bundle');
     if ((0, os_1.platform)() === 'darwin') {
+        core.setOutput('macupdate', `${name}_${version}.app.tar.gz`);
+        core.setOutput('macsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz.sig`)).toString());
         return [
             { path: (0, path_1.join)(artifactsPath, `dmg/${name}_${version}_x64.dmg`), name: `${name}_${version}_x64.dmg` },
             // { path: join(artifactsPath, `macos/${name}.app`), name: `${name}_${version}.app` },
@@ -10699,6 +10757,8 @@ async function buildProject(root, version, name) {
         ];
     }
     else if ((0, os_1.platform)() === 'win32') {
+        core.setOutput('winupdate', `${name}_${version}_x64_en-US.msi.zip`);
+        core.setOutput('winsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`)).toString());
         return [
             { path: (0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi`), name: `${name}_${version}_x64_en-US.msi` },
             { path: (0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip`), name: `${name}_${version}_x64_en-US.msi.zip` },
@@ -10706,6 +10766,8 @@ async function buildProject(root, version, name) {
         ];
     }
     else {
+        core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
+        core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
         return [
             { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64.deb` },
             { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
@@ -12325,10 +12387,13 @@ const core = __nccwpck_require__(2186);
 const path_1 = __nccwpck_require__(1017);
 const utils_1 = __nccwpck_require__(1314);
 const github_1 = __nccwpck_require__(5438);
-const fs_1 = __nccwpck_require__(7147);
+const update_1 = __nccwpck_require__(8386);
 async function run() {
     try {
-        await action();
+        if (core.getInput('gistId') !== '')
+            await action2(); // mode set to update gist
+        else
+            await action1(); // mode set to build and return sig
     }
     catch (error) {
         if (error instanceof Error)
@@ -12336,7 +12401,28 @@ async function run() {
         throw error;
     }
 }
-async function action() {
+async function action2() {
+    if (process.env.GITHUB_TOKEN === undefined) {
+        throw new Error('GITHUB_TOKEN is required');
+    }
+    const github = (0, github_1.getOctokit)(process.env.GITHUB_TOKEN);
+    const releaseId = Number(core.getInput('releaseId'));
+    core.debug(`releaseId: ${releaseId}`);
+    const version = core.getInput('version');
+    core.debug(`version: ${version}`);
+    const name = core.getInput('name');
+    core.debug(`name: ${name}`);
+    const gistId = core.getInput('gistId');
+    core.debug(`gistId: ${gistId}`);
+    const fileName = core.getInput('fileName');
+    core.debug(`fileName: ${fileName}`);
+    const notes = core.getInput('notes');
+    core.debug(`notes: ${notes}`);
+    const tagName = core.getInput('tagName');
+    core.debug(`tagName: ${tagName}`);
+    await (0, update_1.update)(github, version, releaseId, gistId, fileName, notes, tagName);
+}
+async function action1() {
     const projectPath = (0, path_1.resolve)(process.cwd(), core.getInput('path'), 'src-tauri');
     core.debug(`projectPath: ${projectPath}`);
     if (process.env.GITHUB_TOKEN === undefined) {
@@ -12352,7 +12438,6 @@ async function action() {
     const artifacts = await (0, utils_1.buildProject)(projectPath, version, name);
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
     await (0, utils_1.publish)(github, releaseId, artifacts);
-    core.setOutput('sigs', artifacts.filter(a => a.name.endsWith(".sig")).map(a => (0, fs_1.readFileSync)(a.path).toString()).at(0));
 }
 run();
 
