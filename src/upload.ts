@@ -8,6 +8,7 @@ export async function upload(
     releaseId: number,
     artifacts: { path: string, name: string }[]
 ) {
+    core.debug(`uploading to release with id: ${releaseId}`)
     for (const artifact of artifacts) {
         core.info(`uploading: ${artifact.name}: ${artifact.path}`)
         await github.rest.repos.uploadReleaseAsset({

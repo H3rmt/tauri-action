@@ -13,14 +13,15 @@ inputs:
   # mode build
   path:
     description: "path to folder with tauri project"
-    required: true
+    required: false
+    default: "."
   name:
     description: "name of the project"
     required: true
 
   # mode update
   gistId:
-    description: id for gist to change `gistFileName` to new update json
+    description: id for gist to change `gistFileName` to new update json (PAT needs gist update permissions)
     required: false
   fileName:
     description: name of file with new update json (for release and gist)
@@ -33,7 +34,7 @@ inputs:
     description: tag name of release for links to update archives
     required: true
   uploadToRelease:
-    description: upload update json to release
+    description: upload update json to release (PAT needs release upload permissions)
     required: false
     default: "true"
 

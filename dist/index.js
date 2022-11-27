@@ -10798,6 +10798,7 @@ const github_1 = __nccwpck_require__(5438);
 const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
 async function upload(github, releaseId, artifacts) {
+    core.debug(`uploading to release with id: ${releaseId}`);
     for (const artifact of artifacts) {
         core.info(`uploading: ${artifact.name}: ${artifact.path}`);
         await github.rest.repos.uploadReleaseAsset({
