@@ -104,8 +104,8 @@ jobs:
         with:
           version: "0.3.12"
           releaseId: 84242624
+          
           name: tauri-app
-
           path: "tests/tauri-app"
 
   update:
@@ -119,7 +119,6 @@ jobs:
         with:
           version: "0.3.12"
           releaseId: 84242624
-          name: tauri-app
 
           gistId: be4286054435e085560616fefeaa8a6d
           fileName: test.json

@@ -12,8 +12,6 @@ async function run(): Promise<void> {
     core.debug(`releaseId: ${releaseId}`)
     const version = core.getInput('version', { required: true })
     core.debug(`version: ${version}`)
-    const name = core.getInput('name', { required: true })
-    core.debug(`name: ${name}`)
 
     if (process.env.TOKEN === undefined) {
       throw new Error('TOKEN is required')
@@ -22,10 +20,10 @@ async function run(): Promise<void> {
 
     if (core.getInput('releaseTagName') !== '') {
       core.info("mode set to update gist")
-      await action2(github, releaseId, version, name)  // mode set to update gist
+      await action2(github, releaseId, version)  // mode set to update gist
     } else {
       core.info("mode set to build and return sig")
-      await action1(github, releaseId, version, name)  // mode set to build and return sig
+      await action1(github, releaseId, version)  // mode set to build and return sig
     }
   } catch (error) {
     if (error instanceof Error)
@@ -34,7 +32,7 @@ async function run(): Promise<void> {
   }
 }
 
-async function action2(github: InstanceType<typeof GitHub>, releaseId: number, version: string, name: string) {
+async function action2(github: InstanceType<typeof GitHub>, releaseId: number, version: string) {
   const gistId: string | null = core.getInput('gistId') || null
   core.debug(`gistId: ${gistId}`)
   const fileName: string = core.getInput('fileName') || 'update.json'
@@ -49,9 +47,11 @@ async function action2(github: InstanceType<typeof GitHub>, releaseId: number, v
   await update(github, version, releaseId, gistId, fileName, notes, tagName, uploadToRelease)
 }
 
-async function action1(github: InstanceType<typeof GitHub>, releaseId: number, version: string, name: string) {
+async function action1(github: InstanceType<typeof GitHub>, releaseId: number, version: string) {
   const projectPath = resolve(process.cwd(), core.getInput('path', { required: true }), 'src-tauri')
   core.debug(`projectPath: ${projectPath}`)
+  const name = core.getInput('name', { required: true })
+  core.debug(`name: ${name}`)
 
   const artifacts = await build(projectPath, version, name)
   core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))

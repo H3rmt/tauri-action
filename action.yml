@@ -9,13 +9,13 @@ inputs:
   version:
     description: "string with sem. version from tauri.conf.json"
     required: true
-  name:
-    description: "name of project"
-    required: true
 
   # mode build
   path:
     description: "path to folder with tauri project"
+    required: true
+  name:
+    description: "name of the project"
     required: true
 
   # mode update

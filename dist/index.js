@@ -12393,19 +12393,17 @@ async function run() {
         core.debug(`releaseId: ${releaseId}`);
         const version = core.getInput('version', { required: true });
         core.debug(`version: ${version}`);
-        const name = core.getInput('name', { required: true });
-        core.debug(`name: ${name}`);
         if (process.env.TOKEN === undefined) {
             throw new Error('TOKEN is required');
         }
         const github = (0, github_1.getOctokit)(process.env.TOKEN);
         if (core.getInput('releaseTagName') !== '') {
             core.info("mode set to update gist");
-            await action2(github, releaseId, version, name); // mode set to update gist
+            await action2(github, releaseId, version); // mode set to update gist
         }
         else {
             core.info("mode set to build and return sig");
-            await action1(github, releaseId, version, name); // mode set to build and return sig
+            await action1(github, releaseId, version); // mode set to build and return sig
         }
     }
     catch (error) {
@@ -12414,7 +12412,7 @@ async function run() {
         throw error;
     }
 }
-async function action2(github, releaseId, version, name) {
+async function action2(github, releaseId, version) {
     const gistId = core.getInput('gistId') || null;
     core.debug(`gistId: ${gistId}`);
     const fileName = core.getInput('fileName') || 'update.json';
@@ -12427,9 +12425,11 @@ async function action2(github, releaseId, version, name) {
     core.debug(`uploadToRelease: ${uploadToRelease}`);
     await (0, update_1.update)(github, version, releaseId, gistId, fileName, notes, tagName, uploadToRelease);
 }
-async function action1(github, releaseId, version, name) {
+async function action1(github, releaseId, version) {
     const projectPath = (0, path_1.resolve)(process.cwd(), core.getInput('path', { required: true }), 'src-tauri');
     core.debug(`projectPath: ${projectPath}`);
+    const name = core.getInput('name', { required: true });
+    core.debug(`name: ${name}`);
     const artifacts = await (0, build_1.build)(projectPath, version, name);
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
     await (0, upload_1.upload)(github, releaseId, artifacts);
