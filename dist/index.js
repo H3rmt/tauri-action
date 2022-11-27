@@ -10772,7 +10772,7 @@ async function update(github, version, releaseId, gistId, fileName, notes, tagNa
         });
     }
     if (uploadToRelease) {
-        core.info(`uploading ${fileName} to release with id: ${gistId}`);
+        core.info(`uploading ${fileName} to release with id: ${releaseId}`);
         await github.rest.repos.uploadReleaseAsset({
             owner: github_1.context.repo.owner,
             repo: github_1.context.repo.repo,
