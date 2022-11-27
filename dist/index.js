@@ -10665,76 +10665,19 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 8386:
+/***/ 6793:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.update = void 0;
-const github_1 = __nccwpck_require__(5438);
-const core = __nccwpck_require__(2186);
-async function update(github, version, releaseId, gistId, fileName, notes, tagName) {
-    const date = (await github.rest.repos.getRelease({
-        owner: github_1.context.repo.owner,
-        repo: github_1.context.repo.repo,
-        release_id: releaseId
-    })).data.published_at;
-    const winsig = core.getInput('winsig');
-    const macsig = core.getInput('macsig');
-    const linsig = core.getInput('linsig');
-    const winupdate = core.getInput('winupdate');
-    const macupdate = core.getInput('macupdate');
-    const linupdate = core.getInput('linupdate');
-    const content = `{
-    "version": "v${version}",
-    "notes": "${notes}",
-    "pub_date": "${date}",
-    "platforms": {
-        "darwin-x86_64": {
-            "signature": "${macsig}",
-            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${macupdate}"
-        },
-        "linux-x86_64": {
-            "signature": "${linsig}",
-            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${linupdate}"
-        },
-        "windows-x86_64": {
-            "signature": "${winsig}",
-            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${winupdate}"
-        }
-    }
-}`;
-    core.notice(content);
-    await github.rest.gists.update({
-        gist_id: gistId,
-        files: {
-            fileName: {
-                content: content
-            }
-        }
-    });
-    core.notice(`updated ${fileName} for tauri updater`);
-}
-exports.update = update;
-
-
-/***/ }),
-
-/***/ 1314:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.publish = exports.buildProject = void 0;
+exports.build = void 0;
 const path_1 = __nccwpck_require__(1017);
-const github_1 = __nccwpck_require__(5438);
 const os_1 = __nccwpck_require__(2037);
 const execa_1 = __nccwpck_require__(276);
 const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
-async function buildProject(root, version, name) {
+async function build(root, version, name) {
     // install 
     await (0, execa_1.execa)('yarn', ['install', '--frozen-lockfile'], {
         cwd: root,
@@ -10751,7 +10694,6 @@ async function buildProject(root, version, name) {
         core.setOutput('macsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz.sig`)).toString());
         return [
             { path: (0, path_1.join)(artifactsPath, `dmg/${name}_${version}_x64.dmg`), name: `${name}_${version}_x64.dmg` },
-            // { path: join(artifactsPath, `macos/${name}.app`), name: `${name}_${version}.app` },
             { path: (0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz`), name: `${name}_${version}.app.tar.gz` },
             { path: (0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
         ];
@@ -10776,33 +10718,89 @@ async function buildProject(root, version, name) {
         ];
     }
 }
-exports.buildProject = buildProject;
-async function publish(github, releaseId, artifacts) {
-    // const existingAssets = (await github.rest.repos.listReleaseAssets({
-    //     owner: context.repo.owner,
-    //     repo: context.repo.repo,
-    //     release_id: releaseId,
-    //     per_page: 50
-    // })).data
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 8386:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.update = void 0;
+const github_1 = __nccwpck_require__(5438);
+const core = __nccwpck_require__(2186);
+async function update(github, version, releaseId, gistId, fileName, notes, tagName, uploadToRelease) {
+    const date = (await github.rest.repos.getRelease({
+        owner: github_1.context.repo.owner,
+        repo: github_1.context.repo.repo,
+        release_id: releaseId
+    })).data.published_at;
+    const winsig = core.getInput('winsig', { required: true });
+    const macsig = core.getInput('macsig', { required: true });
+    const linsig = core.getInput('linsig', { required: true });
+    const winupdate = core.getInput('winupdate', { required: true });
+    const macupdate = core.getInput('macupdate', { required: true });
+    const linupdate = core.getInput('linupdate', { required: true });
+    const content = `{
+    "version": "v${version}",
+    "notes": "${notes}",
+    "pub_date": "${date}",
+    "platforms": {
+        "darwin-x86_64": {
+            "signature": "${macsig}",
+            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${macupdate}"
+        },
+        "linux-x86_64": {
+            "signature": "${linsig}",
+            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${linupdate}"
+        },
+        "windows-x86_64": {
+            "signature": "${winsig}",
+            "url": "https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/releases/download/${tagName}/${winupdate}"
+        }
+    }
+}`;
+    core.debug(content);
+    if (gistId !== null) {
+        core.info(`updating ${fileName} in gist with id: ${gistId} for tauri updater`);
+        await github.rest.gists.update({
+            gist_id: gistId,
+            files: { [fileName]: { content: content } }
+        });
+    }
+    if (uploadToRelease) {
+        core.info(`uploading ${fileName} to release with id: ${gistId}`);
+        await github.rest.repos.uploadReleaseAsset({
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            release_id: releaseId,
+            name: fileName,
+            data: content
+        });
+    }
+}
+exports.update = update;
+
+
+/***/ }),
+
+/***/ 7296:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.upload = void 0;
+const github_1 = __nccwpck_require__(5438);
+const core = __nccwpck_require__(2186);
+const fs_1 = __nccwpck_require__(7147);
+async function upload(github, releaseId, artifacts) {
     for (const artifact of artifacts) {
-        // const headers = {
-        //     'content-type': 'application/zip',
-        //     'content-length': statSync(artifact.path).size
-        // }
-        // core.info(`headers["content-length"]:${headers["content-length"]}`)
-        // const existingAsset = existingAssets.find((a) => a.name === artifact.name)
-        // core.info(`existing: ${existingAsset}, name: ${artifact.name}`)
-        // if (existingAsset) {
-        //     core.info(`Deleting existing ${artifact.name}...`)
-        //     await github.rest.repos.deleteReleaseAsset({
-        //         owner: context.repo.owner,
-        //         repo: context.repo.repo,
-        //         asset_id: existingAsset.id
-        //     })
-        // }
         core.info(`uploading: ${artifact.name}: ${artifact.path}`);
         await github.rest.repos.uploadReleaseAsset({
-            // headers,
             owner: github_1.context.repo.owner,
             repo: github_1.context.repo.repo,
             release_id: releaseId,
@@ -10811,7 +10809,7 @@ async function publish(github, releaseId, artifacts) {
         });
     }
 }
-exports.publish = publish;
+exports.upload = upload;
 
 
 /***/ }),
@@ -12385,18 +12383,29 @@ var exports = __webpack_exports__;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __nccwpck_require__(2186);
 const path_1 = __nccwpck_require__(1017);
-const utils_1 = __nccwpck_require__(1314);
 const github_1 = __nccwpck_require__(5438);
 const update_1 = __nccwpck_require__(8386);
+const build_1 = __nccwpck_require__(6793);
+const upload_1 = __nccwpck_require__(7296);
 async function run() {
     try {
-        if (core.getInput('gistId') !== '') {
+        const releaseId = Number(core.getInput('releaseId', { required: true }));
+        core.debug(`releaseId: ${releaseId}`);
+        const version = core.getInput('version', { required: true });
+        core.debug(`version: ${version}`);
+        const name = core.getInput('name', { required: true });
+        core.debug(`name: ${name}`);
+        if (process.env.TOKEN === undefined) {
+            throw new Error('TOKEN is required');
+        }
+        const github = (0, github_1.getOctokit)(process.env.TOKEN);
+        if (core.getInput('releaseTagName') !== '') {
             core.info("mode set to update gist");
-            await action2(); // mode set to update gist
+            await action2(github, releaseId, version, name); // mode set to update gist
         }
         else {
             core.info("mode set to build and return sig");
-            await action1(); // mode set to build and return sig
+            await action1(github, releaseId, version, name); // mode set to build and return sig
         }
     }
     catch (error) {
@@ -12405,43 +12414,25 @@ async function run() {
         throw error;
     }
 }
-async function action2() {
-    if (process.env.GITHUB_TOKEN === undefined) {
-        throw new Error('GITHUB_TOKEN is required');
-    }
-    const github = (0, github_1.getOctokit)(process.env.PAT || process.env.GITHUB_TOKEN);
-    const releaseId = Number(core.getInput('releaseId'));
-    core.debug(`releaseId: ${releaseId}`);
-    const version = core.getInput('version');
-    core.debug(`version: ${version}`);
-    const name = core.getInput('name');
-    core.debug(`name: ${name}`);
-    const gistId = core.getInput('gistId');
+async function action2(github, releaseId, version, name) {
+    const gistId = core.getInput('gistId') || null;
     core.debug(`gistId: ${gistId}`);
-    const fileName = core.getInput('fileName');
+    const fileName = core.getInput('fileName') || 'update.json';
     core.debug(`fileName: ${fileName}`);
-    const notes = core.getInput('notes');
+    const notes = core.getInput('releaseNotes', { required: true });
     core.debug(`notes: ${notes}`);
-    const tagName = core.getInput('tagName');
+    const tagName = core.getInput('releaseTagName', { required: true });
     core.debug(`tagName: ${tagName}`);
-    await (0, update_1.update)(github, version, releaseId, gistId, fileName, notes, tagName);
+    const uploadToRelease = Boolean(core.getInput('uploadToRelease')) || true;
+    core.debug(`uploadToRelease: ${uploadToRelease}`);
+    await (0, update_1.update)(github, version, releaseId, gistId, fileName, notes, tagName, uploadToRelease);
 }
-async function action1() {
-    const projectPath = (0, path_1.resolve)(process.cwd(), core.getInput('path'), 'src-tauri');
+async function action1(github, releaseId, version, name) {
+    const projectPath = (0, path_1.resolve)(process.cwd(), core.getInput('path', { required: true }), 'src-tauri');
     core.debug(`projectPath: ${projectPath}`);
-    if (process.env.GITHUB_TOKEN === undefined) {
-        throw new Error('GITHUB_TOKEN is required');
-    }
-    const github = (0, github_1.getOctokit)(process.env.PAT || process.env.GITHUB_TOKEN);
-    const releaseId = Number(core.getInput('releaseId'));
-    core.debug(`releaseId: ${releaseId}`);
-    const version = core.getInput('version');
-    core.debug(`version: ${version}`);
-    const name = core.getInput('name');
-    core.debug(`name: ${name}`);
-    const artifacts = await (0, utils_1.buildProject)(projectPath, version, name);
+    const artifacts = await (0, build_1.build)(projectPath, version, name);
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
-    await (0, utils_1.publish)(github, releaseId, artifacts);
+    await (0, upload_1.upload)(github, releaseId, artifacts);
 }
 run();
 

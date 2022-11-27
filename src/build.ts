@@ -1,17 +1,14 @@
-import { Artifact } from "./def"
 import { join } from 'path'
-import { context } from '@actions/github'
 import { platform } from 'os'
 import { execa } from "execa"
-import { GitHub } from '@actions/github/lib/utils'
 import * as core from '@actions/core'
 import { readFileSync } from 'fs'
 
-export async function buildProject(
+export async function build(
     root: string,
     version: string,
     name: string
-): Promise<Artifact[]> {
+): Promise<{ path: string, name: string }[]> {
     // install 
     await execa('yarn', ['install', '--frozen-lockfile'], {
         cwd: root,
@@ -30,7 +27,6 @@ export async function buildProject(
         core.setOutput('macsig', readFileSync(join(artifactsPath, `macos/${name}.app.tar.gz.sig`)).toString())
         return [
             { path: join(artifactsPath, `dmg/${name}_${version}_x64.dmg`), name: `${name}_${version}_x64.dmg` },
-            // { path: join(artifactsPath, `macos/${name}.app`), name: `${name}_${version}.app` },
             { path: join(artifactsPath, `macos/${name}.app.tar.gz`), name: `${name}_${version}.app.tar.gz` },
             { path: join(artifactsPath, `macos/${name}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
         ]
@@ -53,44 +49,4 @@ export async function buildProject(
         ]
 
     }
-}
-
-export async function publish(github: InstanceType<typeof GitHub>, releaseId: number, artifacts: Artifact[]) {
-    // const existingAssets = (await github.rest.repos.listReleaseAssets({
-    //     owner: context.repo.owner,
-    //     repo: context.repo.repo,
-    //     release_id: releaseId,
-    //     per_page: 50
-    // })).data
-
-    for (const artifact of artifacts) {
-        // const headers = {
-        //     'content-type': 'application/zip',
-        //     'content-length': statSync(artifact.path).size
-        // }
-        // core.info(`headers["content-length"]:${headers["content-length"]}`)
-
-        // const existingAsset = existingAssets.find((a) => a.name === artifact.name)
-        // core.info(`existing: ${existingAsset}, name: ${artifact.name}`)
-
-        // if (existingAsset) {
-        //     core.info(`Deleting existing ${artifact.name}...`)
-        //     await github.rest.repos.deleteReleaseAsset({
-        //         owner: context.repo.owner,
-        //         repo: context.repo.repo,
-        //         asset_id: existingAsset.id
-        //     })
-        // }
-
-        core.info(`uploading: ${artifact.name}: ${artifact.path}`)
-        await github.rest.repos.uploadReleaseAsset({
-            // headers,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: releaseId,
-            name: artifact.name,
-            data: readFileSync(artifact.path).toString(),
-        })
-    }
-
 }

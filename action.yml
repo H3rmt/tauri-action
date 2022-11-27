@@ -1,16 +1,61 @@
-name: 'tauri-action'
-description: 'action to build and distribute tauri apps'
-author: 'H3rmt'
+name: "tauri-action"
+description: "action to build and distribute tauri apps"
+author: "H3rmt"
 inputs:
+  # allways needed
   releaseId:
-    description: 'The id of the release to upload artifacts as release assets'
+    description: "The id of the release to upload artifacts as release assets"
+    required: true
   version:
-    description: 'string with sem. version from tauri.conf.json'  
-  path: 
-    description: 'path to folder with tauri project'
+    description: "string with sem. version from tauri.conf.json"
+    required: true
   name:
-    description: 'name of project'
+    description: "name of project"
+    required: true
 
+  # mode build
+  path:
+    description: "path to folder with tauri project"
+    required: true
+
+  # mode update
+  gistId:
+    description: id for gist to change `gistFileName` to new update json
+    required: false
+  fileName:
+    description: name of file with new update json (for release and gist)
+    required: false
+    default: "update.json"
+  releaseNotes:
+    description: notes to include in update json
+    required: true
+  releaseTagName:
+    description: tag name of release for links to update archives
+    required: true
+  uploadToRelease:
+    description: upload update json to release
+    required: false
+    default: "true"
+
+  # sigs and names for update mode
+  winsig:
+    description: content of msi.zip.sig
+    required: true
+  macsig:
+    description: content of app.tar.gz.sig
+    required: true
+  linsig:
+    description: content of AppImage.tar.gz.sig
+    required: true
+  winupdate:
+    description: name of msi.zip
+    required: true
+  macupdate:
+    description: name of app.tar.gz
+    required: true
+  linupdate:
+    description: name of AppImage.tar.gz
+    required: true
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"
