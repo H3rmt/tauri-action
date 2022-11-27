@@ -53,7 +53,7 @@ export async function update(
     }
 
     if (uploadToRelease) {
-        core.info(`uploading ${fileName} to release with id: ${gistId}`)
+        core.info(`uploading ${fileName} to release with id: ${releaseId}`)
         await github.rest.repos.uploadReleaseAsset({
             owner: context.repo.owner,
             repo: context.repo.repo,
