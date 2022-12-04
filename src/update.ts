@@ -24,7 +24,7 @@ export async function update(
 
     const content = `{
     "version": "v${version}",
-    "notes": "${notes.replace(/(?:\r\n|\r|\n)/g, '<br>')}",
+    "notes": "${notes.replace(/(?:\r\n|\r|\n)/g, '\\n')}",
     "pub_date": "${date}",
     "platforms": {
         "darwin-x86_64": {
