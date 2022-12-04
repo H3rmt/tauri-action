@@ -7,20 +7,24 @@ export async function update(
     version: string, releaseId: number,
     gistId: string | null, fileName: string,
     notes: string, tagName: string,
-    uploadToRelease: boolean) {
-    const date = (await github.rest.repos.getRelease({
+    uploadToRelease: boolean
+) {
+    const data = (await github.rest.repos.getRelease({
         owner: context.repo.owner,
         repo: context.repo.repo,
         release_id: releaseId
-    })).data.published_at;
+    })).data;
 
-    const winsig = core.getInput('winsig', {required: true})
-    const macsig = core.getInput('macsig', {required: true})
-    const linsig = core.getInput('linsig', {required: true})
+    const date = data.published_at
+    const url = data.upload_url
 
-    const winupdate = core.getInput('winupdate', {required: true})
-    const macupdate = core.getInput('macupdate', {required: true})
-    const linupdate = core.getInput('linupdate', {required: true})
+    const winsig = core.getInput('winsig', { required: true })
+    const macsig = core.getInput('macsig', { required: true })
+    const linsig = core.getInput('linsig', { required: true })
+
+    const winupdate = core.getInput('winupdate', { required: true })
+    const macupdate = core.getInput('macupdate', { required: true })
+    const linupdate = core.getInput('linupdate', { required: true })
 
     const content = `{
     "version": "v${version}",
