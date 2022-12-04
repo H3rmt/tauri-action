@@ -10930,7 +10930,6 @@ exports.mimeOrDefault = exports.asset = exports.upload = void 0;
 const github_1 = __nccwpck_require__(5438);
 const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
-const path_1 = __nccwpck_require__(1017);
 const mime_1 = __nccwpck_require__(9994);
 const node_fetch_1 = __nccwpck_require__(467);
 async function upload(github, releaseId, artifacts) {
@@ -10942,8 +10941,9 @@ async function upload(github, releaseId, artifacts) {
     core.debug(`uploading to release with id: ${data.id}`);
     for (const artifact of artifacts) {
         const endpoint = new URL(data.upload_url);
+        const { size, mime, data: body } = (0, exports.asset)(artifact.path);
         endpoint.searchParams.append("name", artifact.name);
-        const { name, size, mime, data: body } = (0, exports.asset)(artifact.path);
+        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}`);
         const resp = await (0, node_fetch_1.default)(endpoint, {
             headers: {
                 "content-length": `${size}`,
@@ -10962,7 +10962,6 @@ async function upload(github, releaseId, artifacts) {
 exports.upload = upload;
 const asset = (path) => {
     return {
-        name: (0, path_1.basename)(path),
         mime: (0, exports.mimeOrDefault)(path),
         size: (0, fs_1.statSync)(path).size,
         data: (0, fs_1.readFileSync)(path),

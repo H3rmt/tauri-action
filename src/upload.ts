@@ -20,8 +20,10 @@ export async function upload(
 
     for (const artifact of artifacts) {
         const endpoint = new URL(data.upload_url);
+        const { size, mime, data: body } = asset(artifact.path);
         endpoint.searchParams.append("name", artifact.name);
-        const { name, size, mime, data: body } = asset(artifact.path);
+
+        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}`)
 
         const resp = await fetch(endpoint, {
             headers: {
@@ -43,9 +45,8 @@ export async function upload(
     }
 }
 
-export const asset = (path: string): { name: string, mime: string, size: number, data: Buffer } => {
+export const asset = (path: string): { mime: string, size: number, data: Buffer } => {
     return {
-        name: basename(path),
         mime: mimeOrDefault(path),
         size: statSync(path).size,
         data: readFileSync(path),
