@@ -19,11 +19,11 @@ export async function upload(
     core.debug(`uploading to release with id: ${data.id}`)
 
     for (const artifact of artifacts) {
-        const endpoint = new URL(data.upload_url);
+        const endpoint = new URL(uploadUrl(data.upload_url));
         const { size, mime, data: body } = asset(artifact.path);
         endpoint.searchParams.append("name", artifact.name);
 
-        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}, data.upload_url: ${data.upload_url}`)
+        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}, data.upload_url: ${data.upload_url}, uploadUrl: ${uploadUrl(data.upload_url)}`)
 
         const resp = await fetch(endpoint, {
             headers: {
@@ -55,3 +55,11 @@ export const asset = (path: string): { mime: string, size: number, data: Buffer 
 export const mimeOrDefault = (path: string): string => {
     return getType(path) || "application/octet-stream";
 };
+
+export const uploadUrl = (url: string): string => {
+    const templateMarkerPos = url.indexOf("{");
+    if (templateMarkerPos > -1) {
+      return url.substring(0, templateMarkerPos);
+    }
+    return url;
+  };

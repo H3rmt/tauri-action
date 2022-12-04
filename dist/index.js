@@ -10926,7 +10926,7 @@ exports.update = update;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.mimeOrDefault = exports.asset = exports.upload = void 0;
+exports.uploadUrl = exports.mimeOrDefault = exports.asset = exports.upload = void 0;
 const github_1 = __nccwpck_require__(5438);
 const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
@@ -10940,10 +10940,10 @@ async function upload(github, releaseId, artifacts) {
     })).data;
     core.debug(`uploading to release with id: ${data.id}`);
     for (const artifact of artifacts) {
-        const endpoint = new URL(data.upload_url);
+        const endpoint = new URL((0, exports.uploadUrl)(data.upload_url));
         const { size, mime, data: body } = (0, exports.asset)(artifact.path);
         endpoint.searchParams.append("name", artifact.name);
-        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}, data.upload_url: ${data.upload_url}`);
+        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}, data.upload_url: ${data.upload_url}, uploadUrl: ${(0, exports.uploadUrl)(data.upload_url)}`);
         const resp = await (0, node_fetch_1.default)(endpoint, {
             headers: {
                 "content-length": `${size}`,
@@ -10972,6 +10972,14 @@ const mimeOrDefault = (path) => {
     return (0, mime_1.getType)(path) || "application/octet-stream";
 };
 exports.mimeOrDefault = mimeOrDefault;
+const uploadUrl = (url) => {
+    const templateMarkerPos = url.indexOf("{");
+    if (templateMarkerPos > -1) {
+        return url.substring(0, templateMarkerPos);
+    }
+    return url;
+};
+exports.uploadUrl = uploadUrl;
 
 
 /***/ }),
