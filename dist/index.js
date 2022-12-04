@@ -10932,6 +10932,7 @@ const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
 const path_1 = __nccwpck_require__(1017);
 const mime_1 = __nccwpck_require__(9994);
+const node_fetch_1 = __nccwpck_require__(467);
 async function upload(github, releaseId, artifacts) {
     const data = (await github.rest.repos.getRelease({
         owner: github_1.context.repo.owner,
@@ -10943,7 +10944,7 @@ async function upload(github, releaseId, artifacts) {
         const endpoint = new URL(data.upload_url);
         endpoint.searchParams.append("name", artifact.name);
         const { name, size, mime, data: body } = (0, exports.asset)(artifact.path);
-        const resp = await fetch(endpoint, {
+        const resp = await (0, node_fetch_1.default)(endpoint, {
             headers: {
                 "content-length": `${size}`,
                 "content-type": mime,

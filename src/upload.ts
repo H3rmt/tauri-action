@@ -4,6 +4,7 @@ import * as core from '@actions/core'
 import { readFileSync, statSync } from 'fs'
 import { basename } from 'path';
 import { getType } from "mime";
+import fetch from "node-fetch";
 
 export async function upload(
     github: InstanceType<typeof GitHub>,
