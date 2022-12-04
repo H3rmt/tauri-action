@@ -10943,7 +10943,7 @@ async function upload(github, releaseId, artifacts) {
         const endpoint = new URL(data.upload_url);
         const { size, mime, data: body } = (0, exports.asset)(artifact.path);
         endpoint.searchParams.append("name", artifact.name);
-        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}`);
+        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}, data.upload_url: ${data.upload_url}`);
         const resp = await (0, node_fetch_1.default)(endpoint, {
             headers: {
                 "content-length": `${size}`,
@@ -10955,7 +10955,7 @@ async function upload(github, releaseId, artifacts) {
         });
         const json = await resp.json();
         if (resp.status !== 201) {
-            throw new Error(`Failed to upload release asset ${name}. received status code ${resp.status}\n${json.message}\n${JSON.stringify(json.errors)}`);
+            throw new Error(`Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n${json.message}\n${JSON.stringify(json.errors)}`);
         }
     }
 }
