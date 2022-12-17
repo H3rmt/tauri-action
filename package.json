@@ -1,6 +1,6 @@
 {
   "name": "tauri-action",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "private": true,
   "description": "action to build and distribute tauri apps",
   "author": "H3rmt",
