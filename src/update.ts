@@ -16,7 +16,6 @@ export async function update(
     })).data;
 
     const date = data.published_at
-    const url = data.upload_url
 
     const winsig = core.getInput('winsig', { required: true })
     const macsig = core.getInput('macsig', { required: true })

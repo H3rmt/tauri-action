@@ -15056,6 +15056,11 @@ async function build(root, version, name) {
         cwd: root,
         stdio: 'inherit'
     });
+    // install 2
+    await (0, execa_1.execa)('cargo', ['update', '--locked'], {
+        cwd: (0, path_1.join)(root, 'src-tauri'),
+        stdio: 'inherit'
+    });
     // build
     await (0, execa_1.execa)('yarn', ['run', 'tauri build'], {
         cwd: root,
@@ -15112,7 +15117,6 @@ async function update(github, version, releaseId, gistId, fileName, notes, tagNa
         release_id: releaseId
     })).data;
     const date = data.published_at;
-    const url = data.upload_url;
     const winsig = core.getInput('winsig', { required: true });
     const macsig = core.getInput('macsig', { required: true });
     const linsig = core.getInput('linsig', { required: true });

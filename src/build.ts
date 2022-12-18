@@ -15,6 +15,12 @@ export async function build(
         stdio: 'inherit'
     })
 
+    // install 2
+    await execa('cargo', ['update', '--locked'], {
+        cwd: join(root, 'src-tauri'),
+        stdio: 'inherit'
+    })
+
     // build
     await execa('yarn', ['run', 'tauri build'], {
         cwd: root,
