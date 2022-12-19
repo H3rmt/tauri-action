@@ -15058,7 +15058,7 @@ async function build(root, version, name) {
     });
     // install 2
     await (0, execa_1.execa)('cargo', ['update', '--locked'], {
-        cwd: (0, path_1.join)(root, 'src-tauri'),
+        cwd: root,
         stdio: 'inherit'
     });
     // build
