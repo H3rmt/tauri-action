@@ -15057,7 +15057,7 @@ async function build(root, version, name) {
         stdio: 'inherit'
     });
     // install 2
-    await (0, execa_1.execa)('cargo', ['fetch', '--locked'], {
+    await (0, execa_1.execa)('cargo', ['fetch'], {
         cwd: root,
         stdio: 'inherit'
     });
