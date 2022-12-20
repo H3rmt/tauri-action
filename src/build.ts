@@ -16,7 +16,7 @@ export async function build(
     })
 
     // install 2
-    await execa('cargo', ['fetch', '--locked'], {
+    await execa('cargo', ['fetch'], {
         cwd: root,
         stdio: 'inherit'
     })
