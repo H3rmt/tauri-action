@@ -15052,22 +15052,26 @@ const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
 async function build(root, version, name) {
     // install 
+    core.info("yarn installing dependencies");
     await (0, execa_1.execa)('yarn', ['install', '--frozen-lockfile'], {
         cwd: root,
         stdio: 'inherit'
     });
     // install 2
+    core.info("cargo installing dependencies");
     await (0, execa_1.execa)('cargo', ['fetch'], {
         cwd: root,
         stdio: 'inherit'
     });
     // build
+    core.info("yarn running tauri build");
     await (0, execa_1.execa)('yarn', ['run', 'tauri build'], {
         cwd: root,
         stdio: 'inherit'
     });
     const artifactsPath = (0, path_1.join)(root, 'target', 'release', 'bundle');
     if ((0, os_1.platform)() === 'darwin') {
+        core.info("darwin platform");
         core.setOutput('macupdate', `${name}_${version}.app.tar.gz`);
         core.setOutput('macsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `macos/${name}.app.tar.gz.sig`)).toString());
         return [
@@ -15077,6 +15081,7 @@ async function build(root, version, name) {
         ];
     }
     else if ((0, os_1.platform)() === 'win32') {
+        core.info("win platform");
         core.setOutput('winupdate', `${name}_${version}_x64_en-US.msi.zip`);
         core.setOutput('winsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`)).toString());
         return [
@@ -15086,6 +15091,7 @@ async function build(root, version, name) {
         ];
     }
     else {
+        core.info("linux platform");
         core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
         core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
         return [
