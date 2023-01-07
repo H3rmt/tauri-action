@@ -10,22 +10,27 @@ export async function build(
     name: string
 ): Promise<{ path: string, name: string }[]> {
     // install 
+    core.info("yarn installing dependencies")
     await execa('yarn', ['install', '--frozen-lockfile'], {
         cwd: root,
         stdio: 'inherit'
     })
+    
 
     // install 2
+    core.info("cargo installing dependencies")
     await execa('cargo', ['fetch'], {
         cwd: root,
         stdio: 'inherit'
     })
 
     // build
+    core.info("yarn running tauri build")
     await execa('yarn', ['run', 'tauri build'], {
         cwd: root,
         stdio: 'inherit'
     })
+
     const artifactsPath = join(root, 'target', 'release', 'bundle')
 
     if (platform() === 'darwin') {
