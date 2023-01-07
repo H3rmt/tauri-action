@@ -34,6 +34,7 @@ export async function build(
     const artifactsPath = join(root, 'target', 'release', 'bundle')
 
     if (platform() === 'darwin') {
+        core.info("darwin platform")
         core.setOutput('macupdate', `${name}_${version}.app.tar.gz`)
         core.setOutput('macsig', readFileSync(join(artifactsPath, `macos/${name}.app.tar.gz.sig`)).toString())
         return [
@@ -42,6 +43,7 @@ export async function build(
             { path: join(artifactsPath, `macos/${name}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
         ]
     } else if (platform() === 'win32') {
+        core.info("win platform")
         core.setOutput('winupdate', `${name}_${version}_x64_en-US.msi.zip`)
         core.setOutput('winsig', readFileSync(join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`)).toString())
         return [
@@ -50,6 +52,7 @@ export async function build(
             { path: join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
         ]
     } else {
+        core.info("linux platform")
         core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
         core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
         return [
