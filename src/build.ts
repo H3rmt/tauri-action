@@ -10,25 +10,31 @@ export async function build(
     name: string
 ): Promise<{ path: string, name: string }[]> {
     // install 
+    core.info("yarn installing dependencies")
     await execa('yarn', ['install', '--frozen-lockfile'], {
         cwd: root,
         stdio: 'inherit'
     })
+    
 
     // install 2
+    core.info("cargo installing dependencies")
     await execa('cargo', ['fetch'], {
         cwd: root,
         stdio: 'inherit'
     })
 
     // build
+    core.info("yarn running tauri build")
     await execa('yarn', ['run', 'tauri build'], {
         cwd: root,
         stdio: 'inherit'
     })
+
     const artifactsPath = join(root, 'target', 'release', 'bundle')
 
     if (platform() === 'darwin') {
+        core.info("darwin platform")
         core.setOutput('macupdate', `${name}_${version}.app.tar.gz`)
         core.setOutput('macsig', readFileSync(join(artifactsPath, `macos/${name}.app.tar.gz.sig`)).toString())
         return [
@@ -37,6 +43,7 @@ export async function build(
             { path: join(artifactsPath, `macos/${name}.app.tar.gz.sig`), name: `${name}_${version}.app.tar.gz.sig` }
         ]
     } else if (platform() === 'win32') {
+        core.info("win platform")
         core.setOutput('winupdate', `${name}_${version}_x64_en-US.msi.zip`)
         core.setOutput('winsig', readFileSync(join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`)).toString())
         return [
@@ -45,6 +52,7 @@ export async function build(
             { path: join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
         ]
     } else {
+        core.info("linux platform")
         core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
         core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
         return [
