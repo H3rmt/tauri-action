@@ -15,7 +15,7 @@ export async function build(
         cwd: root,
         stdio: 'inherit'
     })
-    
+
 
     // install 2
     core.info("cargo installing dependencies")
@@ -52,15 +52,28 @@ export async function build(
             { path: join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
         ]
     } else {
-        core.info("linux platform")
-        core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
-        core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
-        return [
-            { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64.deb` },
-            { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
-            { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
-            { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
-        ]
+        const {stdout} = await execa('openssl.sh', ['version'], {
+            cwd: root,
+        })
+
+        const version = stdout.substring(8,1)
+    
+        if (version == "1") {
+            core.info("linux platform (old ssl)")
+            return [
+                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
+            ]
+        } else {
+            core.info("linux platform (new ssl)")
+            core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
+            core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
+            return [
+                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl3.deb` },
+                { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
+                { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
+                { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
+            ]
+        }
 
     }
 }
