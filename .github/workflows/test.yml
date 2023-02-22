@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
+        platform: [macos-latest, ubuntu-20.04, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     env:
       CARGO_TERM_COLOR: always
@@ -87,7 +87,7 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu-latest' || matrix.platform == 'ubuntu-20.04'
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
       - name: Load Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -100,7 +100,7 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5N2VicWp0d2dHdDBWb01qaUNGZmNCeC9DNEprQWVDd0F0UWtreFphOE9iZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQTR5V2F1Y2p4aitxLzMrNFlVc0ZDN2x5Tjh3SXAyTEdjOVA1YTVxeUhnMlpiVWV0d1l1TDl6L25kdlBMZDFOWDJQQzQ4UTdlcTRiZFAvbmlGb3I0MFNXUEFWRUNWU1FFMzFsUzVneVNmZ1hIenRDZ21nZzBMZDhnQUJINGh0RlltRmdwYm5RVHFTUGc9Cg==
         with:
-          version: "0.3.12"
+          version: "0.3.6"
           releaseId: 84242624
           
           name: tauri-app
@@ -121,7 +121,7 @@ jobs:
           gistId: be4286054435e085560616fefeaa8a6d
           fileName: test.json
           releaseNotes: ${{ github.event.head_commit.message }}
-          releaseTagName: "0.0.0"
+          releaseTagName: "0.3.1"
           
           winsig: ${{ needs.test.outputs.winsig }}
           macsig: ${{ needs.test.outputs.macsig }}

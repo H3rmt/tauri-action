@@ -15184,15 +15184,16 @@ async function build(root, version, name) {
         const { stdout } = await (0, execa_1.execa)('openssl', ['version'], {
             cwd: root,
         });
-        const version = stdout.substring(8, 1);
-        if (version == "1") {
-            core.info("linux platform (old ssl)");
+        core.info(stdout);
+        const sslVersion = stdout.substring(8, 9);
+        if (sslVersion == "1") {
+            core.info("linux platform (ssl1)");
             return [
                 { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
             ];
         }
-        else {
-            core.info("linux platform (new ssl)");
+        else if (sslVersion == "3") {
+            core.info("linux platform (ssl3)");
             core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
             core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
             return [
@@ -15201,6 +15202,9 @@ async function build(root, version, name) {
                 { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
                 { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
             ];
+        }
+        else {
+            throw Error("Error detecting ssl version");
         }
     }
 }
