@@ -52,7 +52,7 @@ export async function build(
             { path: join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
         ]
     } else {
-        const {stdout} = await execa('openssl.sh', ['version'], {
+        const {stdout} = await execa('openssl', ['version'], {
             cwd: root,
         })
 

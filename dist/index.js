@@ -15181,7 +15181,7 @@ async function build(root, version, name) {
         ];
     }
     else {
-        const { stdout } = await (0, execa_1.execa)('openssl.sh', ['version'], {
+        const { stdout } = await (0, execa_1.execa)('openssl', ['version'], {
             cwd: root,
         });
         const version = stdout.substring(8, 1);
