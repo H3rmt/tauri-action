@@ -5768,6 +5768,20 @@ const isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) 
 };
 
 /**
+ * isSameProtocol reports whether the two provided URLs use the same protocol.
+ *
+ * Both domains must already be in canonical form.
+ * @param {string|URL} original
+ * @param {string|URL} destination
+ */
+const isSameProtocol = function isSameProtocol(destination, original) {
+	const orig = new URL$1(original).protocol;
+	const dest = new URL$1(destination).protocol;
+
+	return orig === dest;
+};
+
+/**
  * Fetch function
  *
  * @param   Mixed    url   Absolute url or Request instance
@@ -5798,7 +5812,7 @@ function fetch(url, opts) {
 			let error = new AbortError('The user aborted a request.');
 			reject(error);
 			if (request.body && request.body instanceof Stream.Readable) {
-				request.body.destroy(error);
+				destroyStream(request.body, error);
 			}
 			if (!response || !response.body) return;
 			response.body.emit('error', error);
@@ -5839,8 +5853,42 @@ function fetch(url, opts) {
 
 		req.on('error', function (err) {
 			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, 'system', err));
+
+			if (response && response.body) {
+				destroyStream(response.body, err);
+			}
+
 			finalize();
 		});
+
+		fixResponseChunkedTransferBadEnding(req, function (err) {
+			if (signal && signal.aborted) {
+				return;
+			}
+
+			if (response && response.body) {
+				destroyStream(response.body, err);
+			}
+		});
+
+		/* c8 ignore next 18 */
+		if (parseInt(process.version.substring(1)) < 14) {
+			// Before Node.js 14, pipeline() does not fully support async iterators and does not always
+			// properly handle when the socket close/end events are out of order.
+			req.on('socket', function (s) {
+				s.addListener('close', function (hadError) {
+					// if a data listener is still present we didn't end cleanly
+					const hasDataListener = s.listenerCount('data') > 0;
+
+					// if end happened before close but the socket didn't emit an error, do it now
+					if (response && hasDataListener && !hadError && !(signal && signal.aborted)) {
+						const err = new Error('Premature close');
+						err.code = 'ERR_STREAM_PREMATURE_CLOSE';
+						response.body.emit('error', err);
+					}
+				});
+			});
+		}
 
 		req.on('response', function (res) {
 			clearTimeout(reqTimeout);
@@ -5913,7 +5961,7 @@ function fetch(url, opts) {
 							size: request.size
 						};
 
-						if (!isDomainOrSubdomain(request.url, locationURL)) {
+						if (!isDomainOrSubdomain(request.url, locationURL) || !isSameProtocol(request.url, locationURL)) {
 							for (const name of ['authorization', 'www-authenticate', 'cookie', 'cookie2']) {
 								requestOpts.headers.delete(name);
 							}
@@ -6006,6 +6054,13 @@ function fetch(url, opts) {
 					response = new Response(body, response_options);
 					resolve(response);
 				});
+				raw.on('end', function () {
+					// some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
+					if (!response) {
+						response = new Response(body, response_options);
+						resolve(response);
+					}
+				});
 				return;
 			}
 
@@ -6025,6 +6080,41 @@ function fetch(url, opts) {
 		writeToStream(req, request);
 	});
 }
+function fixResponseChunkedTransferBadEnding(request, errorCallback) {
+	let socket;
+
+	request.on('socket', function (s) {
+		socket = s;
+	});
+
+	request.on('response', function (response) {
+		const headers = response.headers;
+
+		if (headers['transfer-encoding'] === 'chunked' && !headers['content-length']) {
+			response.once('close', function (hadError) {
+				// if a data listener is still present we didn't end cleanly
+				const hasDataListener = socket.listenerCount('data') > 0;
+
+				if (hasDataListener && !hadError) {
+					const err = new Error('Premature close');
+					err.code = 'ERR_STREAM_PREMATURE_CLOSE';
+					errorCallback(err);
+				}
+			});
+		}
+	});
+}
+
+function destroyStream(stream, err) {
+	if (stream.destroy) {
+		stream.destroy(err);
+	} else {
+		// node < 8
+		stream.emit('error', err);
+		stream.end();
+	}
+}
+
 /**
  * Redirect code matching
  *
@@ -15091,15 +15181,27 @@ async function build(root, version, name) {
         ];
     }
     else {
-        core.info("linux platform");
-        core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
-        core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
-        return [
-            { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64.deb` },
-            { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
-            { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
-            { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
-        ];
+        const { stdout } = await (0, execa_1.execa)('openssl.sh', ['version'], {
+            cwd: root,
+        });
+        const version = stdout.substring(8, 1);
+        if (version == "1") {
+            core.info("linux platform (old ssl)");
+            return [
+                { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
+            ];
+        }
+        else {
+            core.info("linux platform (new ssl)");
+            core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
+            core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
+            return [
+                { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl3.deb` },
+                { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
+                { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
+                { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
+            ];
+        }
     }
 }
 exports.build = build;
@@ -15700,8 +15802,8 @@ onetime.callCount = function_ => {
 
 /* harmony default export */ const node_modules_onetime = (onetime);
 
-// EXTERNAL MODULE: external "os"
-var external_os_ = __nccwpck_require__(2037);
+;// CONCATENATED MODULE: external "node:os"
+const external_node_os_namespaceObject = require("node:os");
 ;// CONCATENATED MODULE: ./node_modules/human-signals/build/src/realtime.js
 
 const getRealtimeSignals=function(){
@@ -16026,7 +16128,7 @@ standard})
 {
 const{
 signals:{[name]:constantSignal}}=
-external_os_.constants;
+external_node_os_namespaceObject.constants;
 const supported=constantSignal!==undefined;
 const number=supported?constantSignal:defaultNumber;
 return{name,number,description,supported,action,forced,standard};
@@ -16042,16 +16144,21 @@ return{name,number,description,supported,action,forced,standard};
 
 const getSignalsByName=function(){
 const signals=getSignals();
-return signals.reduce(getSignalByName,{});
+return Object.fromEntries(signals.map(getSignalByName));
 };
 
-const getSignalByName=function(
-signalByNameMemo,
-{name,number,description,supported,action,forced,standard})
+const getSignalByName=function({
+name,
+number,
+description,
+supported,
+action,
+forced,
+standard})
 {
-return{
-...signalByNameMemo,
-[name]:{name,number,description,supported,action,forced,standard}};
+return[
+name,
+{name,number,description,supported,action,forced,standard}];
 
 };
 
@@ -16093,7 +16200,7 @@ standard}};
 
 
 const findSignalByNumber=function(number,signals){
-const signal=signals.find(({name})=>external_os_.constants.signals[name]===number);
+const signal=signals.find(({name})=>external_node_os_namespaceObject.constants.signals[name]===number);
 
 if(signal!==undefined){
 return signal;
@@ -16242,8 +16349,6 @@ const normalizeStdioNode = options => {
 	return [...stdio, 'ipc'];
 };
 
-;// CONCATENATED MODULE: external "node:os"
-const external_node_os_namespaceObject = require("node:os");
 // EXTERNAL MODULE: ./node_modules/signal-exit/index.js
 var signal_exit = __nccwpck_require__(4931);
 ;// CONCATENATED MODULE: ./node_modules/execa/lib/kill.js
@@ -16392,9 +16497,7 @@ var merge_stream = __nccwpck_require__(2621);
 
 // `input` option
 const handleInput = (spawned, input) => {
-	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852
-	// @todo remove `|| spawned.stdin === undefined` once we drop support for Node.js <=12.2.0
-	if (input === undefined || spawned.stdin === undefined) {
+	if (input === undefined) {
 		return;
 	}
 
@@ -16426,7 +16529,8 @@ const makeAllStream = (spawned, {all}) => {
 
 // On failure, `result.stdout|stderr|all` should contain the currently buffered stream
 const getBufferedData = async (stream, streamPromise) => {
-	if (!stream) {
+	// When `buffer` is `false`, `streamPromise` is `undefined` and there is no buffered data to retrieve
+	if (!stream || streamPromise === undefined) {
 		return;
 	}
 
@@ -16476,7 +16580,9 @@ const validateInputSync = ({input}) => {
 };
 
 ;// CONCATENATED MODULE: ./node_modules/execa/lib/promise.js
+// eslint-disable-next-line unicorn/prefer-top-level-await
 const nativePromisePrototype = (async () => {})().constructor.prototype;
+
 const descriptors = ['then', 'catch', 'finally'].map(property => [
 	property,
 	Reflect.getOwnPropertyDescriptor(nativePromisePrototype, property),
@@ -17404,7 +17510,7 @@ function dataUriToBuffer(uri) {
         if (meta[i] === 'base64') {
             base64 = true;
         }
-        else {
+        else if (meta[i]) {
             typeFull += `;${meta[i]}`;
             if (meta[i].indexOf('charset=') === 0) {
                 charset = meta[i].substring(8);
