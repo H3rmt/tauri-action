@@ -57,7 +57,7 @@ export async function build(
         })
 
         core.info(stdout);
-        const sslVersion = stdout.substring(8,1)
+        const sslVersion = stdout.substring(8,9)
         
     
         if (sslVersion == "1") {
