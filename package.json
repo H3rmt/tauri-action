@@ -20,7 +20,7 @@
     "execa": "7.0.0"
   },
   "devDependencies": {
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.14.1",
     "@types/mime": "^3.0.1",
     "@types/node-fetch": "^2.5.12",
     "@vercel/ncc": "^0.36.1",
