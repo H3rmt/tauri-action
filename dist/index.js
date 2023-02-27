@@ -15162,7 +15162,7 @@ async function build(root, version, name, isVendorSsl, checkOpenSslVersion) {
     }
     else {
         core.info("yarn running tauri build --features vendored_ssl");
-        await (0, execa_1.execa)('yarn', ['run', 'tauri build --features vendored_ssl'], {
+        await (0, execa_1.execa)('yarn', ['run', 'tauri build ssl'], {
             cwd: root,
             stdio: 'inherit'
         });
