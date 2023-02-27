@@ -1,4 +1,5 @@
 on:
+  workflow_dispatch:
   push:
     branches:
       - release
@@ -105,6 +106,9 @@ jobs:
           
           name: tauri-app
           path: "tests/tauri-app"
+
+          addVendorSsl: true
+          checkOpenSslVersion: true
 
   update:
     runs-on: ubuntu-latest

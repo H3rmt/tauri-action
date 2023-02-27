@@ -15140,7 +15140,7 @@ const os_1 = __nccwpck_require__(2037);
 const execa_1 = __nccwpck_require__(13);
 const core = __nccwpck_require__(2186);
 const fs_1 = __nccwpck_require__(7147);
-async function build(root, version, name) {
+async function build(root, version, name, isVendorSsl, checkOpenSslVersion) {
     // install 
     core.info("yarn installing dependencies");
     await (0, execa_1.execa)('yarn', ['install', '--frozen-lockfile'], {
@@ -15153,12 +15153,20 @@ async function build(root, version, name) {
         cwd: root,
         stdio: 'inherit'
     });
-    // build
-    core.info("yarn running tauri build");
-    await (0, execa_1.execa)('yarn', ['run', 'tauri build'], {
-        cwd: root,
-        stdio: 'inherit'
-    });
+    if (isVendorSsl) {
+        core.info("yarn running tauri build");
+        await (0, execa_1.execa)('yarn', ['run', 'tauri build'], {
+            cwd: root,
+            stdio: 'inherit'
+        });
+    }
+    else {
+        core.info("yarn running tauri build --features \"vendored_ssl\"");
+        await (0, execa_1.execa)('yarn', ['run', 'tauri build', '--features "vendored_ssl"'], {
+            cwd: root,
+            stdio: 'inherit'
+        });
+    }
     const artifactsPath = (0, path_1.join)(root, 'target', 'release', 'bundle');
     if ((0, os_1.platform)() === 'darwin') {
         core.info("darwin platform");
@@ -15181,6 +15189,12 @@ async function build(root, version, name) {
         ];
     }
     else {
+        return handleLinux(root, version, name, artifactsPath, isVendorSsl, checkOpenSslVersion);
+    }
+}
+exports.build = build;
+async function handleLinux(root, version, name, artifactsPath, isVendorSsl, checkOpenSslVersion) {
+    if (checkOpenSslVersion) {
         const { stdout } = await (0, execa_1.execa)('openssl', ['version'], {
             cwd: root,
         });
@@ -15189,7 +15203,7 @@ async function build(root, version, name) {
         if (sslVersion == "1") {
             core.info("linux platform (ssl1)");
             return [
-                { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
+                { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_${isVendorSsl ? 'ven_' : ''}ssl1.deb` },
             ];
         }
         else if (sslVersion == "3") {
@@ -15197,7 +15211,7 @@ async function build(root, version, name) {
             core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
             core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
             return [
-                { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl3.deb` },
+                { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_${isVendorSsl ? 'ven_' : ''}ssl3.deb` },
                 { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
                 { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
                 { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
@@ -15207,8 +15221,18 @@ async function build(root, version, name) {
             throw Error("Error detecting ssl version");
         }
     }
+    else {
+        core.info("linux platform");
+        core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`);
+        core.setOutput('linsig', (0, fs_1.readFileSync)((0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString());
+        return [
+            { path: (0, path_1.join)(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64.deb` },
+            { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
+            { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
+            { path: (0, path_1.join)(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
+        ];
+    }
 }
-exports.build = build;
 
 
 /***/ }),
@@ -19824,9 +19848,18 @@ async function action1(github, releaseId, version) {
     core.debug(`projectPath: ${projectPath}`);
     const name = core.getInput('name', { required: true });
     core.debug(`name: ${name}`);
-    const artifacts = await (0, build_1.build)(projectPath, version, name);
+    const addVendorSsl = Boolean(core.getInput('addVendorSsl', { required: false })) || false;
+    core.debug(`addVendorSsl: ${addVendorSsl}`);
+    const checkOpenSslVersion = Boolean(core.getInput('checkOpenSslVersion', { required: false })) || false;
+    core.debug(`checkOpenSslVersion: ${checkOpenSslVersion}`);
+    const artifacts = await (0, build_1.build)(projectPath, version, name, false, checkOpenSslVersion);
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
     await (0, upload_1.upload)(github, releaseId, artifacts);
+    if (addVendorSsl) {
+        const artifacts = await (0, build_1.build)(projectPath, version, name, true, checkOpenSslVersion);
+        core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n));
+        await (0, upload_1.upload)(github, releaseId, artifacts);
+    }
 }
 run();
 

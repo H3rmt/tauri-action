@@ -53,10 +53,22 @@ async function action1(github: InstanceType<typeof GitHub>, releaseId: number, v
   const name = core.getInput('name', { required: true })
   core.debug(`name: ${name}`)
 
-  const artifacts = await build(projectPath, version, name)
+  const addVendorSsl = Boolean(core.getInput('addVendorSsl', { required: false })) || false
+  core.debug(`addVendorSsl: ${addVendorSsl}`)
+  const checkOpenSslVersion = Boolean(core.getInput('checkOpenSslVersion', { required: false })) || false
+  core.debug(`checkOpenSslVersion: ${checkOpenSslVersion}`)
+
+  const artifacts = await build(projectPath, version, name, false, checkOpenSslVersion)
   core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
 
   await upload(github, releaseId, artifacts)
+
+  if (addVendorSsl) {
+    const artifacts = await build(projectPath, version, name, true, checkOpenSslVersion)
+    core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
+
+    await upload(github, releaseId, artifacts)
+  }
 }
 
 run()

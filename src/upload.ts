@@ -59,7 +59,7 @@ export const mimeOrDefault = (path: string): string => {
 export const uploadUrl = (url: string): string => {
     const templateMarkerPos = url.indexOf("{");
     if (templateMarkerPos > -1) {
-      return url.substring(0, templateMarkerPos);
+        return url.substring(0, templateMarkerPos);
     }
     return url;
-  };
+};
