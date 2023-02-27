@@ -33,8 +33,8 @@ export async function build(
             stdio: 'inherit'
         })
     } else { 
-        core.info("yarn running tauri build --features \"vendored_ssl\"")
-        await execa('yarn', ['run', 'tauri build', '--features "vendored_ssl"'], {
+        core.info("yarn running tauri build --features vendored_ssl")
+        await execa('yarn', ['run', 'tauri build --features vendored_ssl'], {
             cwd: root,
             stdio: 'inherit'
         })
