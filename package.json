@@ -6,7 +6,7 @@
   "author": "H3rmt",
   "license": "MIT",
   "scripts": {
-    "package": "ncc build -o ./dist -s -t ./src/index.ts --license licenses.txt"
+    "package": "ncc build -o ./dist -m -t ./src/index.ts --license licenses.txt --target es2020"
   },
   "repository": {
     "type": "git",

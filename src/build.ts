@@ -27,14 +27,14 @@ export async function build(
     })
 
     if (isVendorSsl) {
-        core.info("yarn running tauri build")
-        await execa('yarn', ['run', 'tauri build'], {
+        core.info("yarn running tauri build --features vendored_ssl")
+        await execa('yarn', ['run', 'tauri build ssl'], {
             cwd: root,
             stdio: 'inherit'
         })
     } else { 
-        core.info("yarn running tauri build --features vendored_ssl")
-        await execa('yarn', ['run', 'tauri build ssl'], {
+        core.info("yarn running tauri build")
+        await execa('yarn', ['run', 'tauri build'], {
             cwd: root,
             stdio: 'inherit'
         })
