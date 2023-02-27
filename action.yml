@@ -24,7 +24,7 @@ inputs:
     required: false
     default: false
   
-  checkOpenSslVersion: true
+  checkOpenSslVersion:
     description: "upload with ssl3 or ssl1 suffix"
     required: false
     default: false
