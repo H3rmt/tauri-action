@@ -130,7 +130,6 @@ jobs:
 
           gistId: be4286054435e085560616fefeaa8a6d
           fileName: test.json
-          releaseNotes: ${{ github.event.head_commit.message }}
           releaseTagName: "0.3.1"
           
           winsig: ${{ needs.test.outputs.winsig }}
