@@ -126,7 +126,7 @@ jobs:
           version: "0.3.12"
           releaseId: 84242624
 
-          releaseNotes: `RELEASE NOTES`
+          releaseNotes: 'RELEASE NOTES'
 
           gistId: be4286054435e085560616fefeaa8a6d
           fileName: test.json
