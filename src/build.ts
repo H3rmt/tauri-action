@@ -85,9 +85,13 @@ async function handleLinux(
 
         if (sslVersion == "1") {
             core.info("linux platform (ssl1)")
-            return [
-                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_${isVendorSsl ? 'ven_' : ''}ssl1.deb` },
-            ]
+            if (isVendorSsl) {
+                return [] // TODO dont build if nothing is uploaded 
+            } else {
+                return [
+                    { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
+                ]
+            }
         } else if (sslVersion == "3") {
             core.info("linux platform (ssl3)")
             core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
