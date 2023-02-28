@@ -18,6 +18,16 @@ inputs:
   name:
     description: "name of the project"
     required: true
+  
+  addVendorSsl: 
+    description: "run build twice, add one package with bundled ssl, one without"
+    required: false
+    default: false
+  
+  checkOpenSslVersion:
+    description: "upload with ssl3 or ssl1 suffix"
+    required: false
+    default: false
 
   # mode update
   gistId:

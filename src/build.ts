@@ -7,7 +7,9 @@ import { readFileSync } from 'fs'
 export async function build(
     root: string,
     version: string,
-    name: string
+    name: string,
+    isVendorSsl: boolean,
+    checkOpenSslVersion: boolean
 ): Promise<{ path: string, name: string }[]> {
     // install 
     core.info("yarn installing dependencies")
@@ -24,14 +26,23 @@ export async function build(
         stdio: 'inherit'
     })
 
-    // build
-    core.info("yarn running tauri build")
-    await execa('yarn', ['run', 'tauri build'], {
-        cwd: root,
-        stdio: 'inherit'
-    })
+    if (isVendorSsl) {
+        core.info("yarn running tauri build --features vendored_ssl")
+        await execa('yarn', ['run', 'tauri build ssl'], {
+            cwd: root,
+            stdio: 'inherit'
+        })
+    } else {
+        core.info("yarn running tauri build")
+        await execa('yarn', ['run', 'tauri build'], {
+            cwd: root,
+            stdio: 'inherit'
+        })
+    }
+
 
     const artifactsPath = join(root, 'target', 'release', 'bundle')
+
 
     if (platform() === 'darwin') {
         core.info("darwin platform")
@@ -52,32 +63,72 @@ export async function build(
             { path: join(artifactsPath, `msi/${name}_${version}_x64_en-US.msi.zip.sig`), name: `${name}_${version}_x64_en-US.msi.zip.sig` }
         ]
     } else {
-        const {stdout} = await execa('openssl', ['version'], {
+        return handleLinux(root, version, name, artifactsPath, isVendorSsl, checkOpenSslVersion)
+    }
+}
+
+async function handleLinux(
+    root: string,
+    version: string,
+    name: string,
+    artifactsPath: string,
+    isVendorSsl: boolean,
+    checkOpenSslVersion: boolean
+): Promise<{ path: string, name: string }[]> {
+    if (checkOpenSslVersion) {
+        const { stdout } = await execa('openssl', ['version'], {
             cwd: root,
         })
 
         core.info(stdout);
-        const sslVersion = stdout.substring(8,9)
-        
-    
+        const sslVersion = stdout.substring(8, 9)
+
         if (sslVersion == "1") {
             core.info("linux platform (ssl1)")
-            return [
-                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
-            ]
+            if (isVendorSsl) {
+                return [] // TODO dont build if nothing is uploaded 
+            } else {
+                return [
+                    { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl1.deb` },
+                ]
+            }
         } else if (sslVersion == "3") {
             core.info("linux platform (ssl3)")
             core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
             core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
+            if (isVendorSsl) {
+                return [
+                    { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ven_ssl3.deb` }
+                ]
+            } else {
+                return [
+                    { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl3.deb` },
+                    { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
+                    { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
+                    { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
+                ]
+            }
+        } else {
+            throw Error("Error detecting ssl version")
+        }
+    } else {
+        core.info("linux platform")
+        core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
+        core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
+        if (isVendorSsl) {
             return [
-                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl3.deb` },
+                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ven_ssl.deb` }
+            ]
+        } else {
+            return [
+                { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64.deb` },
                 { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
                 { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz`), name: `${name}_${version}_amd64.AppImage.tar.gz` },
                 { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`), name: `${name}_${version}_amd64.AppImage.tar.gz.sig` }
             ]
-        } else {
-            throw Error("Error detecting ssl version")
         }
 
     }
+
+
 }

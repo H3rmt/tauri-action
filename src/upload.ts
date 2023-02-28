@@ -37,7 +37,7 @@ export async function upload(
 
         const json = await resp.json();
         if (resp.status !== 201) {
-            throw new Error(
+            core.error(
                 `Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n${json.message}\n${JSON.stringify(json.errors)}`
             );
         }
@@ -59,7 +59,7 @@ export const mimeOrDefault = (path: string): string => {
 export const uploadUrl = (url: string): string => {
     const templateMarkerPos = url.indexOf("{");
     if (templateMarkerPos > -1) {
-      return url.substring(0, templateMarkerPos);
+        return url.substring(0, templateMarkerPos);
     }
     return url;
-  };
+};

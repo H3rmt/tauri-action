@@ -1,4 +1,5 @@
 on:
+  workflow_dispatch:
   push:
     branches:
       - release
@@ -53,11 +54,15 @@ jobs:
 
             for (const asset of data.assets) {
               core.info(`Deleting existing ${asset.name}...`)
-              await github.rest.repos.deleteReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                asset_id: asset.id
-              })
+              try {
+                await github.rest.repos.deleteReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  asset_id: asset.id
+                })
+              } catch (e) {
+                core.warning(e)
+              }
             }
 
   test:
@@ -106,6 +111,9 @@ jobs:
           name: tauri-app
           path: "tests/tauri-app"
 
+          addVendorSsl: true
+          checkOpenSslVersion: true
+
   update:
     runs-on: ubuntu-latest
     needs: [test]
@@ -118,9 +126,10 @@ jobs:
           version: "0.3.12"
           releaseId: 84242624
 
+          releaseNotes: 'RELEASE NOTES'
+
           gistId: be4286054435e085560616fefeaa8a6d
           fileName: test.json
-          releaseNotes: ${{ github.event.head_commit.message }}
           releaseTagName: "0.3.1"
           
           winsig: ${{ needs.test.outputs.winsig }}
