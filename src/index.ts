@@ -64,7 +64,7 @@ async function action1(github: InstanceType<typeof GitHub>, releaseId: number, v
 
   await upload(github, releaseId, artifacts)
 
-  if (addVendorSsl && platform() !== 'win32' && platform() === 'darwin') {
+  if (addVendorSsl && platform() !== 'win32' && platform() !== 'darwin') {
     const artifacts = await build(projectPath, version, name, true, checkOpenSslVersion)
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
 
