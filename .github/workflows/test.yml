@@ -54,11 +54,15 @@ jobs:
 
             for (const asset of data.assets) {
               core.info(`Deleting existing ${asset.name}...`)
-              await github.rest.repos.deleteReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                asset_id: asset.id
-              })
+              try {
+                await github.rest.repos.deleteReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  asset_id: asset.id
+                })
+              } catch (e) {
+                core.warning(e)
+              }
             }
 
   test:
