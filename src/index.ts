@@ -5,6 +5,7 @@ import { update } from './update'
 import { GitHub } from '@actions/github/lib/utils'
 import { build } from './build'
 import { upload } from './upload'
+import { platform } from 'os'
 
 async function run(): Promise<void> {
   try {
@@ -63,7 +64,7 @@ async function action1(github: InstanceType<typeof GitHub>, releaseId: number, v
 
   await upload(github, releaseId, artifacts)
 
-  if (addVendorSsl) {
+  if (addVendorSsl && platform() !== 'win32' && platform() === 'darwin') {
     const artifacts = await build(projectPath, version, name, true, checkOpenSslVersion)
     core.info(artifacts.map(a => `${a.name}: ${a.path}`).reduce((f, n) => f + "\n" + n))
 
