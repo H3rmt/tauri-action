@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   pull_request:
-      - release
+    - release
 
 jobs:
   check-dist:
