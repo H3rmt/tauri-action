@@ -37,9 +37,14 @@ export async function upload(
 
         const json = await resp.json();
         if (resp.status !== 201) {
-            core.error(
-                `Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n${json.message}\n${JSON.stringify(json.errors)}`
-            );
+            if (typeof json === "object" && json != null && "message" in json && "errors" in json)
+                core.error(
+                    `Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n${json?.message}\n${JSON.stringify(json?.errors)}`
+                );
+            else 
+                core.error(
+                    `Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n`
+                );    
         }
     }
 }
