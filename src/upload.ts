@@ -2,9 +2,7 @@ import { context } from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
 import * as core from '@actions/core'
 import { readFileSync, statSync } from 'fs'
-import { basename } from 'path';
 import { getType } from "mime";
-import fetch from "node-fetch";
 
 export async function upload(
     github: InstanceType<typeof GitHub>,
@@ -19,33 +17,20 @@ export async function upload(
     core.debug(`uploading to release with id: ${data.id}`)
 
     for (const artifact of artifacts) {
-        const endpoint = new URL(uploadUrl(data.upload_url));
-        const { size, mime, data: body } = asset(artifact.path);
-        endpoint.searchParams.append("name", artifact.name);
+        const { size, mime, data } = asset(artifact.path);
 
-        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}, endpoint: ${endpoint}, data.upload_url: ${data.upload_url}, uploadUrl: ${uploadUrl(data.upload_url)}`)
+        core.info(`size:${size}, name: ${artifact.name}, mime:${mime}, path:${artifact.path}`)
 
-        const resp = await fetch(endpoint, {
-            headers: {
-                "content-length": `${size}`,
-                "content-type": mime,
-                authorization: `token ${process.env.TOKEN}`,
-            },
-            method: "POST",
-            body,
+        const headers = { 'content-type': mime, 'content-length': size };
+
+        const d = await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: releaseId,
+            headers: headers,
+            name: artifact.name,
+            data: data.toString()
         });
-
-        const json = await resp.json();
-        if (resp.status !== 201) {
-            if (typeof json === "object" && json != null && "message" in json && "errors" in json)
-                core.error(
-                    `Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n${json?.message}\n${JSON.stringify(json?.errors)}`
-                );
-            else 
-                core.error(
-                    `Failed to upload release asset ${artifact.name}. received status code ${resp.status}\n`
-                );    
-        }
     }
 }
 
@@ -59,12 +44,4 @@ export const asset = (path: string): { mime: string, size: number, data: Buffer 
 
 export const mimeOrDefault = (path: string): string => {
     return getType(path) || "application/octet-stream";
-};
-
-export const uploadUrl = (url: string): string => {
-    const templateMarkerPos = url.indexOf("{");
-    if (templateMarkerPos > -1) {
-        return url.substring(0, templateMarkerPos);
-    }
-    return url;
 };
