@@ -29,7 +29,9 @@ export async function upload(
             release_id: releaseId,
             headers: headers,
             name: artifact.name,
-            data: data.toString()
+            // https://github.com/tauri-apps/tauri-action/pull/45
+            // @ts-ignore error TS2322: Type 'Buffer' is not assignable to type 'string'.
+            data: data
         });
     }
 }
