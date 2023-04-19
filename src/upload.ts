@@ -38,7 +38,7 @@ export async function upload(
 
 export const asset = (path: string): { mime: string, size: number, data: Buffer } => {
     return {
-        mime: mimeOrDefault(path),
+        mime: "application/octet-stream", // mimeOrDefault(path),
         size: statSync(path).size,
         data: readFileSync(path),
     };
