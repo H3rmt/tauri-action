@@ -94,13 +94,13 @@ async function handleLinux(
             }
         } else if (sslVersion == "3") {
             core.info("linux platform (ssl3)")
-            core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
-            core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
             if (isVendorSsl) {
                 return [
                     { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ven_ssl3.deb` }
                 ]
             } else {
+                core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
+                core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
                 return [
                     { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ssl3.deb` },
                     { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
@@ -113,13 +113,13 @@ async function handleLinux(
         }
     } else {
         core.info("linux platform")
-        core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
-        core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
         if (isVendorSsl) {
             return [
                 { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64_ven_ssl.deb` }
             ]
         } else {
+            core.setOutput('linupdate', `${name}_${version}_amd64.AppImage.tar.gz`)
+            core.setOutput('linsig', readFileSync(join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage.tar.gz.sig`)).toString())
             return [
                 { path: join(artifactsPath, `deb/${name}_${version}_amd64.deb`), name: `${name}_${version}_amd64.deb` },
                 { path: join(artifactsPath, `appimage/${name}_${version}_amd64.AppImage`), name: `${name}_${version}_amd64.AppImage` },
