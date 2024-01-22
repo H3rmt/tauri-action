@@ -16,7 +16,7 @@
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
     "mime": "^3.0.0",
-    "execa": "7.1.1"
+    "execa": "8.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.1.5",
